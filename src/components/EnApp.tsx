@@ -61,7 +61,7 @@ export const EnApp = () => {
 
   return (
     <>
-      <Title>Enumerator</Title>
+      <Title mb="sm">Enumerator</Title>
       <div>
         {"Calculate the number of "}
         <SegmentedControl
@@ -129,8 +129,22 @@ export const EnApp = () => {
       </Text>
       <ResultList results={results} />
       <Group>
-        <Anchor>Examples</Anchor>
-        <Anchor>Git</Anchor>
+        <Anchor
+          variant="gradient"
+          gradient={{ from: "indigo", to: "cyan" }}
+          underline="hover"
+        >
+          Examples
+        </Anchor>
+        <Anchor
+          href="https://github.com/szonglin/enumerator.git"
+          variant="gradient"
+          gradient={{ from: "indigo", to: "cyan" }}
+          underline="hover"
+          target="_blank"
+        >
+          GitHub
+        </Anchor>
       </Group>
     </>
   );
