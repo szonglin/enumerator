@@ -96,6 +96,7 @@ export const EnApp = () => {
         <input
           className="input"
           type="text"
+          spellCheck="false"
           value={inputString}
           onChange={handleInputChange}
           placeholder="enter a string or comma-separated list"

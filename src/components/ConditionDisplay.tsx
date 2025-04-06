@@ -66,6 +66,15 @@ export const ConditionDisplay = ({
             onChange={onChange}
           />
         );
+      case "count":
+      case "countOverlap":
+      case "subseqCount":
+        return (
+          <SubArgWithNumOptions
+            conditionValues={conditionValues}
+            onChange={onChange}
+          />
+        );
       default:
         console.log("Unexpected condition type:", cond);
         return <div>Error</div>;
@@ -182,5 +191,56 @@ const NumArgOptions = ({ conditionValues, onChange }: OptionsProps) => {
         }}
       />
     </Group>
+  );
+};
+
+const SubArgWithNumOptions = ({ conditionValues, onChange }: OptionsProps) => {
+  const [arg1, setArg1] = useState("");
+  const [arg2, setArg2] = useState("");
+  const handleComparisonChange = (e: comparisonOption) => {
+    onChange(conditionValues.id, {
+      ...conditionValues,
+      comparison: e,
+    });
+  };
+  return (
+    <>
+      <TextInput
+        value={arg1}
+        onChange={(e) => {
+          if (e.target.value !== undefined) {
+            setArg1(e.target.value);
+            onChange(conditionValues.id, {
+              ...conditionValues,
+              arg: e.target.value,
+            });
+          }
+        }}
+      />
+      <Group wrap="nowrap" align="center">
+        <ComparisonSwitcher onChange={handleComparisonChange} />
+        <TextInput
+          value={arg2}
+          onChange={(e) => {
+            if (e.target.value !== undefined) {
+              if (!Number.isNaN(Number(e.target.value))) {
+                setArg2(e.target.value);
+                onChange(conditionValues.id, {
+                  ...conditionValues,
+                  arg2: e.target.value,
+                });
+              } else if (e.target.value.length <= 1) {
+                setArg2(e.target.value);
+                setArg2(e.target.value);
+                onChange(conditionValues.id, {
+                  ...conditionValues,
+                  arg2: e.target.value,
+                });
+              }
+            }
+          }}
+        />
+      </Group>
+    </>
   );
 };

@@ -57,6 +57,24 @@ export const conditionList = [
     description:
       "smallest element compared with the argument, eg. '1, 2, 3' > '0' or 'glass' = 'a'",
   },
+  {
+    condition: "count",
+    description:
+      "number of appearances of the first argument (as a subarray) compared with the second with only distinct (non-overlapping)" +
+      " terms counted, eg. 'banana' has 1 copy of 'ana'",
+  },
+  {
+    condition: "countOverlap",
+    description:
+      "number of appearances of the first argument (as a subarray) compared with the second, including overlapping" +
+      " terms, eg. 'banana' has 2 copies of 'ana'",
+  },
+  {
+    condition: "subseqCount",
+    description:
+      "number of appearances of the first argument (as a subsequence) compared with the second, eg. 'banana' has 4" +
+      " subsequences of 'ana'",
+  },
 ];
 
 export abstract class Condition {
@@ -139,40 +157,122 @@ export class Contains extends Condition {
   }
 }
 
-// export class Count extends Condition {
-//   arg: number[];
-//   amount: number;
-//   property: comparisonOption;
-//   constructor(
-//     enumerator: Enumerator,
-//     arg: number[],
-//     amount: number,
-//     property: comparisonOption
-//   ) {
-//     super(enumerator);
-//     this.arg = arg;
-//     this.amount = amount;
-//     this.property = property;
-//   }
-//   validate(input: number[]): void {
-//     if (isNaN(this.amount)) throw new Error("Invalid argument");
-//     if (!this.arg.length) throw new Error("Missing argument");
-//     throw new Error("Method not implemented.");
-//   }
-//   // this counts distinct terms, not overlapping. eg. ababab is one count of abab not two
-//   evaluate(test: number[]): boolean {
-//     let res = 0;
-//     let seen = 0;
-//     for (let i = 0; i < test.length; i++) {
-//       if (seen === this.arg.length) {
-//         res++;
-//         seen = 0;
-//       }
-//       seen = test[i] === this.arg[seen] ? seen + 1 : 0;
-//     }
-//     return evaluateComparison(this.property, res, this.amount);
-//   }
-// }
+export class Count extends Condition {
+  arg: number[];
+  amount: number;
+  property: comparisonOption;
+  constructor(
+    enumerator: Enumerator,
+    arg: number[],
+    amount: number,
+    property: comparisonOption
+  ) {
+    super(enumerator);
+    this.arg = arg;
+    this.amount = amount;
+    this.property = property;
+  }
+  validate(): void {
+    if (isNaN(this.amount)) throw new Error("Invalid argument");
+    if (!this.arg.length) throw new Error("Missing argument");
+  }
+  // this counts distinct terms, not overlapping. eg. ababab is one count of abab not two
+  evaluate(test: number[]): boolean {
+    if (test.length < this.arg.length) return false;
+    let res = 0;
+    let seen = 0;
+    for (let i = 0; i < test.length; i++) {
+      if (seen === this.arg.length) {
+        res++;
+        seen = 0;
+      }
+      if (test[i] === this.arg[seen]) seen++;
+      else seen = test[i] === this.arg[0] ? 1 : 0;
+    }
+    if (seen === this.arg.length) res++;
+    return evaluateComparison(this.property, res, this.amount);
+  }
+}
+
+export class CountOverlap extends Condition {
+  arg: number[];
+  amount: number;
+  property: comparisonOption;
+  constructor(
+    enumerator: Enumerator,
+    arg: number[],
+    amount: number,
+    property: comparisonOption
+  ) {
+    super(enumerator);
+    this.arg = arg;
+    this.amount = amount;
+    this.property = property;
+  }
+  validate(): void {
+    if (isNaN(this.amount)) throw new Error("Invalid argument");
+    if (!this.arg.length) throw new Error("Missing argument");
+  }
+  // this counts distinct terms, not overlapping. eg. ababab is one count of abab not two
+  // !!quadratic complexity
+  evaluate(test: number[]): boolean {
+    let res = 0;
+    for (let i = 0; i + this.arg.length - 1 < test.length; i++) {
+      let matched = true;
+      for (let j = 0; j < this.arg.length; j++) {
+        if (test[i + j] !== this.arg[j]) {
+          matched = false;
+          break;
+        }
+      }
+      if (matched) res++;
+    }
+    return evaluateComparison(this.property, res, this.amount);
+  }
+}
+
+export class SubseqCount extends Condition {
+  arg: number[];
+  amount: number;
+  property: comparisonOption;
+  constructor(
+    enumerator: Enumerator,
+    arg: number[],
+    amount: number,
+    property: comparisonOption
+  ) {
+    super(enumerator);
+    this.arg = arg;
+    this.amount = amount;
+    this.property = property;
+  }
+  validate(): void {
+    if (isNaN(this.amount)) throw new Error("Invalid argument");
+    if (!this.arg.length) throw new Error("Missing argument");
+  }
+  // strictly, this counts the number of ways we can obtain the arg array by deleting
+  // elements of the test array
+  // !!quadratic complexity
+  evaluate(test: number[]): boolean {
+    if (test.length < this.arg.length) return false;
+    const count = Array.from({ length: this.arg.length + 1 }, () =>
+      Array(test.length + 1).fill(0)
+    );
+    for (let j = 0; j < test.length + 1; j++) count[0][j] = 1;
+    for (let i = 1; i <= this.arg.length; i++)
+      for (let j = 1; j <= test.length; j++) {
+        count[i][j] =
+          this.arg[i - 1] === test[j - 1]
+            ? count[i][j - 1] + count[i - 1][j - 1]
+            : count[i][j - 1];
+      }
+    return evaluateComparison(
+      this.property,
+      count[this.arg.length][test.length],
+      this.amount
+    );
+  }
+}
 
 export class Subsequence extends Condition {
   arg: number[];
@@ -261,30 +361,6 @@ export class EndsWith extends Condition {
     return true;
   }
 }
-
-// export class AtPosition extends Condition {
-//   maximumIndex: number;
-//   arg1: number;
-//   arg2: number;
-//   constructor(enumerator: Enumerator, arg1: number, arg2: number) {
-//     super(enumerator);
-//     this.arg1 = arg1;
-//     this.arg2 = arg2;
-//   }
-//   validate(input: number[], length?: number): void {
-//     if (this.enumerator.enumerationType !== "permutation")
-//       throw new Error("This condition is order dependent (permutations only)");
-//     const contains = new Contains(this.enumerator, [this.arg2]);
-//     contains.validate(input, length);
-//   }
-//   evaluate(test: number[]): boolean {
-//     if (this.maximumIndex >= test.length) return false;
-//     for (const e of this.arg) {
-//       if (test[e[0]] !== e[1]) return false;
-//     }
-//     return true;
-//   }
-// }
 
 export class Sum extends Condition {
   arg: number;
