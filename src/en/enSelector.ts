@@ -4,6 +4,7 @@ import {
   AllPermutations,
   DirectPermutations,
   EnumMethod,
+  Permutations,
   Trivial,
 } from "./enMethod";
 import { enumerationType } from "./util";
@@ -39,15 +40,21 @@ export class EnSelector {
   }
   public select = (): EnumMethod => {
     this.testlog();
+    // trivial permutations
     if (this.length === 0 || this.length > this.input.length) {
       return new Trivial(this.input, this.conditions, this.length);
     } else if (this.enumerationType === "permutation") {
+      // permutations with no conditions can be calculated directly
       if (this.input.length === this.length && !this.conditions.length)
         return new DirectPermutations(this.input, this.conditions, this.length);
-      // fallback to all perms - if the number of perms exceeds 10^9, give probabilistic answer
-      return new AllPermutations(this.input, this.conditions, this.length);
+      // if input length is equal to length, use AllPermutations with less overhead
+      if (this.input.length === this.length)
+        return new AllPermutations(this.input, this.conditions, this.length);
+      // fallback to default perms generator
+      return new Permutations(this.input, this.conditions, this.length);
+      // if the number of perms exceeds 10^9, give probabilistic answer
     } else {
-      // fallback to all combs - if the number of combs exceeds 10^9, give probabilistic answer
+      // if the number of combs exceeds 10^9, give probabilistic answer
       return new AllCombinations(this.input, this.conditions, this.length);
     }
     throw new Error("Unexpected error");

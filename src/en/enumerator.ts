@@ -56,7 +56,7 @@ export class Enumerator {
     const res: string[] = [];
     this.conditions.forEach((cond) => {
       try {
-        cond.validate(this.input);
+        cond.validate();
         res.push("");
       } catch (err) {
         res.push((err as Error).message);

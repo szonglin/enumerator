@@ -23,11 +23,10 @@ export abstract class EnumMethod {
   public abstract enumerate(): _EnumResult;
 }
 
-// default for full length permutations
+// brute force permutations with less overhead when the permutation is on the full input
 export class AllPermutations extends EnumMethod {
   public enumerate(): _EnumResult {
-    let total = 0;
-    let res = 0;
+    let [res, total] = [0, 0];
     const _input = [...this.input];
     do {
       total++;
@@ -41,6 +40,39 @@ export class AllPermutations extends EnumMethod {
         total
       ).toPrecision(4)}%)`,
     };
+  }
+}
+
+// default for permutations
+export class Permutations extends EnumMethod {
+  public enumerate(): _EnumResult {
+    const [res, total] = this.enumerate_helper(this.input, []);
+    return {
+      value: res,
+      description: "via brute force evaluation",
+      detail: `of ${total} checked permutations, ${res} satisfied the conditions (${(
+        (100 * res) /
+        total
+      ).toPrecision(4)}%)`,
+    };
+  }
+
+  private enumerate_helper(from: number[], on: number[]): [number, number] {
+    // base case: the permutation is generated
+    if (on.length === this.length) return [this.evaluate(on) ? 1 : 0, 1];
+    let [res, total] = [0, 0];
+    const used = new Set<number>();
+    for (let i = 0; i < from.length; i++) {
+      const selected = from[i];
+      if (used.has(selected)) continue;
+      used.add(selected);
+      const nextFrom = from.filter((_, _i) => _i !== i);
+      const nextOn = on.concat([selected]);
+      const [recRes, recTotal] = this.enumerate_helper(nextFrom, nextOn);
+      res += recRes;
+      total += recTotal;
+    }
+    return [res, total];
   }
 }
 
