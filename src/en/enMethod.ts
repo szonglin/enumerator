@@ -7,9 +7,8 @@ type _EnumResult = Pick<
   "value" | "description" | "detail" | "isApproximation"
 >;
 
-const probTrialNum = 2500000;
-
 export abstract class EnumMethod {
+  static readonly PROB_RUNS = 1 << 21;
   input: number[];
   conditions: Condition[];
   length: number;
@@ -26,6 +25,9 @@ export abstract class EnumMethod {
     return true;
   }
   public abstract enumerate(): _EnumResult;
+  public enValue(): number {
+    return this.enumerate().value;
+  }
 }
 
 /* Without Repetition Enumerators */

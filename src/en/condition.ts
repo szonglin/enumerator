@@ -82,6 +82,9 @@ export abstract class Condition {
   constructor(enumerator: Enumerator) {
     this.enumerator = enumerator;
   }
+  public estimateScale(): number {
+    return this.enumerator.length;
+  }
   abstract validate(): void;
   abstract evaluate(test: number[]): boolean;
 }
@@ -214,7 +217,6 @@ export class CountOverlap extends Condition {
     if (!this.arg.length) throw new Error("Missing argument");
   }
   // this counts distinct terms, not overlapping. eg. ababab is one count of abab not two
-  // !!quadratic complexity
   evaluate(test: number[]): boolean {
     let res = 0;
     for (let i = 0; i + this.arg.length - 1 < test.length; i++) {
@@ -228,6 +230,9 @@ export class CountOverlap extends Condition {
       if (matched) res++;
     }
     return evaluateComparison(this.property, res, this.amount);
+  }
+  public estimateScale(): number {
+    return Math.pow(this.enumerator.length, 2);
   }
 }
 
@@ -252,7 +257,6 @@ export class SubseqCount extends Condition {
   }
   // strictly, this counts the number of ways we can obtain the arg array by deleting
   // elements of the test array
-  // !!quadratic complexity
   evaluate(test: number[]): boolean {
     if (test.length < this.arg.length) return false;
     const count = Array.from({ length: this.arg.length + 1 }, () =>
@@ -271,6 +275,9 @@ export class SubseqCount extends Condition {
       count[this.arg.length][test.length],
       this.amount
     );
+  }
+  public estimateScale(): number {
+    return Math.pow(this.enumerator.length, 2);
   }
 }
 

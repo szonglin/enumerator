@@ -12,8 +12,12 @@ import {
   DirectCombinationsRp,
   DirUnqPermutations,
   DirUnqCombinations,
+  PrPermutations,
+  PrPermutationsRp,
+  PrCombinations,
+  PrCombinationsRp,
 } from "./enMethod";
-import { enumerationType } from "./util";
+import { enumerationType, Util } from "./util";
 
 export class EnSelector {
   private input: number[];
@@ -48,8 +52,32 @@ export class EnSelector {
     );
   }
 
+  static readonly MAX_COMPLEXITY = 1 << 30;
+
   private isDistinct = (): boolean => {
     return new Set(this.input).size === this.input.length;
+  };
+
+  private upperBound = (): number => {
+    if (this.repeats && this.enumerationType === "permutation")
+      return new DirectPermutationsRp(this.input, [], this.length).enValue();
+    if (this.repeats && this.enumerationType === "combination")
+      return new DirectCombinationsRp(this.input, [], this.length).enValue();
+    if (!this.repeats && this.enumerationType === "permutation")
+      return Math.min(
+        new DirectPermutations(this.input, [], this.length).enValue(),
+        Util.nPr(this.input.length, this.length)
+      );
+    if (!this.repeats && this.enumerationType === "combination")
+      return Util.nCr(this.input.length, this.length);
+    throw new Error("Unexpected error");
+  };
+
+  private estimate = (): number => {
+    return (
+      this.upperBound() *
+      this.conditions.reduce((a, b) => a + b.estimateScale(), 1)
+    );
   };
 
   private noConds = (): boolean => {
@@ -57,36 +85,54 @@ export class EnSelector {
   };
 
   private handleNoRepeatPerms = (): EnumMethod => {
+    /* fast cases */
     // permutations with no conditions can be calculated directly
     if (this.input.length === this.length && this.noConds())
       return new DirectPermutations(this.input, this.conditions, this.length);
     if (this.isDistinct() && !this.conditions.length)
       return new DirUnqPermutations(this.input, this.conditions, this.length);
 
+    /* brute force methods */
+    if (this.estimate() > EnSelector.MAX_COMPLEXITY)
+      return new PrPermutations(this.input, this.conditions, this.length);
+
     // if input length is equal to length, use AllPermutations with less overhead
     if (this.input.length === this.length)
       return new AllPermutations(this.input, this.conditions, this.length);
     // fallback to default perms generator
     return new Permutations(this.input, this.conditions, this.length);
-    // if the number of perms exceeds 10^9, give probabilistic answer
   };
 
   private handleRepeatPerms = (): EnumMethod => {
+    /* fast cases */
     if (this.noConds())
       return new DirectPermutationsRp(this.input, this.conditions, this.length);
+
+    /* brute force methods */
+    if (this.estimate() > EnSelector.MAX_COMPLEXITY)
+      return new PrPermutationsRp(this.input, this.conditions, this.length);
     return new PermutationsRp(this.input, this.conditions, this.length);
   };
 
   private handleNoRepeatCombs = (): EnumMethod => {
+    /* fast cases */
     if (this.isDistinct() && this.noConds())
       return new DirUnqCombinations(this.input, this.conditions, this.length);
-    // if the number of combs exceeds 10^9, give probabilistic answer
+
+    /* brute force methods */
+    if (this.estimate() > EnSelector.MAX_COMPLEXITY)
+      return new PrCombinations(this.input, this.conditions, this.length);
     return new Combinations(this.input, this.conditions, this.length);
   };
 
   private handleRepeatCombs = (): EnumMethod => {
+    /* fast cases */
     if (this.conditions.length === 0)
       return new DirectCombinationsRp(this.input, this.conditions, this.length);
+
+    /* brute force methods */
+    if (this.estimate() > EnSelector.MAX_COMPLEXITY)
+      return new PrCombinationsRp(this.input, this.conditions, this.length);
     return new CombinationsRp(this.input, this.conditions, this.length);
   };
 
