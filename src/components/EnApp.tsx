@@ -130,9 +130,11 @@ export const EnApp = () => {
       <ResultList results={results} />
       <Group>
         <Anchor
+          href="https://github.com/szonglin/enumerator/blob/main/other/examples.md"
           variant="gradient"
           gradient={{ from: "indigo", to: "cyan" }}
           underline="hover"
+          target="_blank"
         >
           Examples
         </Anchor>
