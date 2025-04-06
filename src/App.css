@@ -7,11 +7,12 @@
 
 .input {
   outline: none;
-  font-size: 30px;
+  font-size: 32px;
   font-weight: bold;
   text-align: center;
   width: 100%;
   border: 0;
+  margin-bottom: 10px;
 }
 
 ::selection {

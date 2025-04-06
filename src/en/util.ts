@@ -42,7 +42,7 @@ export class Util {
 
   // evaluates n choose r
   static nCr(n: number, r: number): number {
-    return this.nPr(n, r) / this.factorial(r);
+    return this.roundDivision(this.nPr(n, r), this.factorial(r));
   }
 
   // performs a division and rounds the result
@@ -87,6 +87,11 @@ export class Util {
     return (e >= 65 && e <= 90) || (e >= 97 && e <= 122)
       ? String.fromCharCode(e)
       : e.toString();
+  }
+
+  // remove duplicates from an array - output is guaranteed to be sorted
+  static removeDuplicates(arr: number[]): number[] {
+    return Array.from(new Set(arr).keys()).sort((a, b) => a - b);
   }
 
   // random permutation

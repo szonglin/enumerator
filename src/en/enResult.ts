@@ -4,18 +4,21 @@ export class EnumResult {
   public description: string;
   public detail: string;
   public request: string;
+  public isApproximation: boolean;
 
   constructor(
     id: number,
     value: number,
     description: string,
     detail: string,
-    request: string
+    request: string,
+    isApproximation?: boolean
   ) {
     this.id = id;
     this.value = value;
     this.description = description;
     this.detail = detail;
     this.request = request;
+    this.isApproximation = isApproximation || false;
   }
 }

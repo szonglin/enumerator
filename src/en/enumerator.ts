@@ -15,6 +15,7 @@ export class Enumerator {
   private conditions: Condition[] = [];
   private inputCopy = "";
   private conditionSummary = "";
+  private repeats = false;
   constructor(enumerationType: enumerationType) {
     this.enumerationType = enumerationType;
   }
@@ -33,6 +34,10 @@ export class Enumerator {
     if (length < 0 || !Number.isInteger(length))
       throw new Error("Invalid length");
     this.length = length;
+  };
+
+  public setRepeats = (to: boolean) => {
+    this.repeats = to;
   };
 
   public run = (): EnumResult => {
@@ -86,16 +91,18 @@ export class Enumerator {
       this.input,
       this.enumerationType,
       this.length,
-      this.conditions
+      this.conditions,
+      this.repeats
     );
     this.en = ens.select();
   };
 
   private summariseRequest = () => {
     return (
-      `${this.enumerationType.substring(0, 4)}, '${this.inputCopy}', length ${
-        this.length
-      }` + (this.conditionSummary && `, [${this.conditionSummary}]`)
+      `${this.enumerationType.substring(0, 4)}, ${
+        this.repeats ? "repeats" : "no repeats"
+      }, '${this.inputCopy}', length ${this.length}` +
+      (this.conditionSummary && `, [${this.conditionSummary}]`)
     );
   };
 }

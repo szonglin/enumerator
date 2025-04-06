@@ -33,6 +33,7 @@ export const EnApp = () => {
   const [inputLength, setInputLength] = useState(0);
   const [_conditions, setConditions] = useState<Record<string, string>[]>([]);
   const [results, setResults] = useState<EnumResult[]>([]);
+  const [withRepetitions, setWithRepetitions] = useState(false);
 
   const handleSubmit = async () => {
     setIsLoading(true);
@@ -41,6 +42,7 @@ export const EnApp = () => {
       Util.validateString(inputString);
       _enumerator.current.setInput(inputString);
       _enumerator.current.setLength(inputLength);
+      _enumerator.current.setRepeats(withRepetitions);
       _enumerator.current.setEnumerationType(enumerationType);
       _enumerator.current.setConditions(_conditions);
       await new Promise((r) => setTimeout(r, 50));
@@ -99,7 +101,7 @@ export const EnApp = () => {
           spellCheck="false"
           value={inputString}
           onChange={handleInputChange}
-          placeholder="enter a string or comma-separated list"
+          placeholder="enter a string or space-separated list"
         />
       </div>
       <Group>
@@ -113,7 +115,14 @@ export const EnApp = () => {
           style={{ width: "65px" }}
           min={0}
         />
-        {/* TODO: <SegmentedControl data={["with repetitions", "without repetitions"]} /> */}
+        <SegmentedControl
+          data={["without repetitions", "with repetitions"]}
+          value={withRepetitions ? "with repetitions" : "without repetitions"}
+          onChange={(e) => {
+            if (e === "with repetitions") setWithRepetitions(true);
+            else setWithRepetitions(false);
+          }}
+        />
         {_conditions.length && <div>{" where"}</div>}
       </Group>
       <ConditionList
