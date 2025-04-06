@@ -1,8 +1,8 @@
 export type enumerationType = "permutation" | "combination";
 
 export class Util {
-  // converts a string input into an array
-  static inputToArray = (input: string) => {
+  // converts a string input to an array of numbers
+  static inputToArray = (input: string): number[] => {
     input = input.trim();
     let res;
     if (input.includes(",")) {
@@ -78,7 +78,7 @@ export class Util {
   // generates a mask with n-r zeroes followed by r ones
   static mask(n: number, r: number): number[] {
     let res = Array(n).fill(0);
-    for (let i = 0; i < r; i++) res[n - 1 - r] = 1;
+    for (let i = 0; i < r; i++) res[n - 1 - i] = 1;
     return res;
   }
 
@@ -94,13 +94,50 @@ export class Util {
     return Array.from(new Set(arr).keys()).sort((a, b) => a - b);
   }
 
+  // random int
+  static randInt(upperBound: number): number {
+    return Math.floor(Math.random() * upperBound);
+  }
+
+  // random array element
+  static randElement(arr: number[]): number {
+    return arr[this.randInt(arr.length)];
+  }
+
   // random permutation
-  static generatePermutation(arr: number[], length: number): number[] {
-    throw new Error("not implemented");
+  static randPerm(arr: number[], length: number): number[] {
+    return this.randPermFull(arr).splice(0, length);
+  }
+
+  // fisher-yates shuffle: https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
+  static randPermFull(arr: number[]): number[] {
+    const permed = [...arr];
+    for (let i = permed.length; i > 0; i--) {
+      const j = this.randInt(i + 1);
+      [permed[j], permed[i]] = [permed[i], permed[j]];
+    }
+    return permed;
+  }
+
+  // random permutation with repeats, arr must not have repeats
+  static randPermRp(arr: number[], length: number): number[] {
+    return Array.from({ length }, () => this.randElement(arr));
   }
 
   // random choice - output is not guaranteed to be sorted
-  static generateChoice(arr: number[], length: number): number[] {
-    throw new Error("not implemented");
+  static randChoice(arr: number[], length: number): number[] {
+    // honestly not sure if its the same distribution to just do fisheryates and then sort but this *feels* better
+    let bitmask = this.randPermFull(this.mask(arr.length, length));
+    const res = [];
+    // faster than reduce
+    for (let i = 0; i < arr.length; i++) {
+      if (bitmask[i]) res.push(arr[i]);
+    }
+    return res;
+  }
+
+  // random choice with repeats, arr must not have repeats
+  static randChoiceRp(arr: number[], length: number): number[] {
+    return this.randPermRp(arr, length).sort((a, b) => a - b);
   }
 }
