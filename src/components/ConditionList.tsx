@@ -1,7 +1,7 @@
 import { Box, Button, Popover, Select } from "@mantine/core";
 import { useState } from "react";
 import { ConditionDisplay } from "./ConditionDisplay";
-import { conditionTypes } from "../en/condition";
+import { conditionList } from "../en/condition";
 
 export interface ConditionListProps {
   selectedConditions: Record<string, string>[];
@@ -72,7 +72,7 @@ export const ConditionList = ({
           <Select
             placeholder="Choose a condition"
             searchable={true}
-            data={conditionTypes}
+            data={conditionList.map((e) => e.condition)}
             onChange={(e) => {
               if (e) handleAdd(e);
               setShowPopover(false);

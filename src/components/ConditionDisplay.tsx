@@ -5,9 +5,12 @@ import {
   Select,
   Text,
   TextInput,
+  Tooltip,
 } from "@mantine/core";
-import { IconX } from "@tabler/icons-react";
+import { IconHelpHexagon, IconX } from "@tabler/icons-react";
 import { useState } from "react";
+import { comparisonOption, conditionList } from "../en/condition";
+import { ComparisonSwitcher } from "./ComparisonSwitcher";
 
 export interface ConditionDisplayProps {
   conditionValues: Record<string, string>;
@@ -37,13 +40,34 @@ export const ConditionDisplay = ({
           />
         );
       case "subarray":
+      case "subsequence":
+      case "startsWith":
+      case "endsWith":
+      case "contains":
         return (
           <SubArgOptions
             conditionValues={conditionValues}
             onChange={onChange}
           />
         );
+      case "palindrome":
+      case "distinct":
+        return (
+          <Text fs="italic" c="gray">
+            (no options)
+          </Text>
+        );
+      case "sum":
+      case "maximum":
+      case "minimum":
+        return (
+          <NumArgOptions
+            conditionValues={conditionValues}
+            onChange={onChange}
+          />
+        );
       default:
+        console.log("Unexpected condition type:", cond);
         return <div>Error</div>;
     }
   };
@@ -70,7 +94,17 @@ export const ConditionDisplay = ({
           <IconX />
         </ActionIcon>
       )}
-      <Text fw={"bold"}>{conditionValues.condition}</Text>
+      <Group gap="0.2em">
+        <Text fw={"bold"}>{conditionValues.condition}</Text>
+        <Tooltip
+          label={
+            conditionList.find((e) => e.condition === conditionValues.condition)
+              ?.description || "Error"
+          }
+        >
+          <IconHelpHexagon size="1.2rem" color="royalblue" />
+        </Tooltip>
+      </Group>
       {getOptions(conditionValues.condition)}
     </Card>
   );
@@ -107,6 +141,43 @@ const SubArgOptions = ({ conditionValues, onChange }: OptionsProps) => {
               ...conditionValues,
               arg: e.target.value,
             });
+          }
+        }}
+      />
+    </Group>
+  );
+};
+
+const NumArgOptions = ({ conditionValues, onChange }: OptionsProps) => {
+  const [arg, setArg] = useState("");
+  const handleComparisonChange = (e: comparisonOption) => {
+    onChange(conditionValues.id, {
+      ...conditionValues,
+      comparison: e,
+    });
+  };
+
+  return (
+    <Group wrap="nowrap" align="center">
+      <ComparisonSwitcher onChange={handleComparisonChange} />
+      <TextInput
+        value={arg}
+        onChange={(e) => {
+          if (e.target.value !== undefined) {
+            if (!Number.isNaN(Number(e.target.value))) {
+              setArg(e.target.value);
+              onChange(conditionValues.id, {
+                ...conditionValues,
+                arg: e.target.value,
+              });
+            } else if (e.target.value.length <= 1) {
+              setArg(e.target.value);
+              setArg(e.target.value);
+              onChange(conditionValues.id, {
+                ...conditionValues,
+                arg: e.target.value,
+              });
+            }
           }
         }}
       />
