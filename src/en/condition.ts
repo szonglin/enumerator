@@ -64,7 +64,7 @@ export abstract class Condition {
   constructor(enumerator: Enumerator) {
     this.enumerator = enumerator;
   }
-  abstract validate(input: number[]): void;
+  abstract validate(): void;
   abstract evaluate(test: number[]): boolean;
 }
 
@@ -87,9 +87,9 @@ export class Increasing extends Condition {
     super(enumerator);
     this.strict = strict;
   }
-  validate(input: number[]) {
+  validate() {
     if (this.enumerator.enumerationType !== "permutation")
-      throw new Error("This condition is order dependent (permutations only)");
+      throw new Error("Increasing is order dependent (permutations only)");
   }
   evaluate(test: number[]): boolean {
     for (let i = 0; i < test.length - 1; i++) {
@@ -107,9 +107,9 @@ export class Decreasing extends Condition {
     super(enumerator);
     this.strict = strict;
   }
-  validate(input: number[]) {
+  validate() {
     if (this.enumerator.enumerationType !== "permutation")
-      throw new Error("This condition is order dependent (permutations only)");
+      throw new Error("Decreasing is order dependent (permutations only)");
   }
   evaluate(test: number[]): boolean {
     for (let i = 0; i < test.length - 1; i++) {
@@ -127,12 +127,8 @@ export class Contains extends Condition {
     super(enumerator);
     this.arg = arg;
   }
-  validate(input: number[], length?: number): void {
+  validate(): void {
     if (!this.arg.length) throw new Error("Missing argument");
-    if (!this.evaluate(input))
-      throw new Error("This condition will always be false");
-    if (length && length < this.arg.length)
-      throw new Error("This condition will always be false");
   }
   evaluate(test: number[]): boolean {
     // check what the optimal approach is (for, for), (method, method), (for, method), (method, for)
@@ -184,10 +180,11 @@ export class Subsequence extends Condition {
     super(enumerator);
     this.arg = arg;
   }
-  validate(input: number[], length?: number): void {
-    if (!this.arg.length) throw new Error("Missing argument");
+  validate(): void {
+    if (this.arg.some((e) => Number.isNaN(e)))
+      throw new Error("Invalid value in argument");
     if (this.enumerator.enumerationType !== "permutation")
-      throw new Error("This condition is order dependent (permutations only)");
+      throw new Error("Subsequence is order dependent (permutations only)");
   }
   evaluate(test: number[]): boolean {
     let j = 0;
@@ -204,11 +201,11 @@ export class Subarray extends Condition {
     super(enumerator);
     this.arg = arg;
   }
-  validate(input: number[], length?: number): void {
+  validate(): void {
     if (this.arg.some((e) => Number.isNaN(e)))
       throw new Error("Invalid value in argument");
     if (this.enumerator.enumerationType !== "permutation")
-      throw new Error("This condition is order dependent (permutations only)");
+      throw new Error("Subarray is order dependent (permutations only)");
   }
   evaluate(test: number[]): boolean {
     for (let i = 0; i < test.length; i++) {
@@ -231,12 +228,10 @@ export class StartsWith extends Condition {
     super(enumerator);
     this.arg = arg;
   }
-  validate(input: number[], length?: number): void {
+  validate(): void {
     if (!this.arg.length) throw new Error("Missing argument");
     if (this.enumerator.enumerationType !== "permutation")
-      throw new Error("This condition is order dependent (permutations only)");
-    const contains = new Contains(this.enumerator, this.arg);
-    contains.validate(input, length);
+      throw new Error("StartsWith is order dependent (permutations only)");
   }
   evaluate(test: number[]): boolean {
     for (let i = 0; i < this.arg.length; i++) {
@@ -252,12 +247,10 @@ export class EndsWith extends Condition {
     super(enumerator);
     this.arg = arg;
   }
-  validate(input: number[], length?: number): void {
+  validate(): void {
     if (!this.arg.length) throw new Error("Missing argument");
     if (this.enumerator.enumerationType !== "permutation")
-      throw new Error("This condition is order dependent (permutations only)");
-    const contains = new Contains(this.enumerator, this.arg);
-    contains.validate(input, length);
+      throw new Error("EndsWith is order dependent (permutations only)");
   }
   evaluate(test: number[]): boolean {
     const startIndex = test.length - this.arg.length;
@@ -301,10 +294,10 @@ export class Sum extends Condition {
     this.arg = arg;
     this.property = property;
   }
-  validate(input: number[]): void {
+  validate(): void {
     if (isNaN(this.arg)) throw new Error("Invalid argument");
-    if (!input.every((e) => !isNaN(Number(e))))
-      throw new Error("Inputs must be numbers");
+    if (!this.enumerator.input.every((e) => !isNaN(Number(e))))
+      throw new Error("Sum arguments must be numbers");
   }
   evaluate(test: number[]): boolean {
     let sum = 0;
@@ -314,9 +307,9 @@ export class Sum extends Condition {
 }
 
 export class Palindrome extends Condition {
-  validate(input: number[], length?: number): void {
+  validate(): void {
     if (this.enumerator.enumerationType !== "permutation")
-      throw new Error("This condition is order dependent (permutations only)");
+      throw new Error("Palindrom is order dependent (permutations only)");
   }
   evaluate(test: number[]): boolean {
     for (let i = 0; i < test.length >> 1; i++) {
@@ -327,10 +320,7 @@ export class Palindrome extends Condition {
 }
 
 export class Distinct extends Condition {
-  validate(input: number[]): void {
-    if (this.evaluate(input))
-      throw new Error("This condition will always be true.");
-  }
+  validate(): void {}
   evaluate(test: number[]): boolean {
     const set = new Set(test);
     return set.size === test.length;
@@ -345,7 +335,7 @@ export class Maximum extends Condition {
     this.arg = arg;
     this.property = property;
   }
-  validate(input: number[]): void {}
+  validate(): void {}
   evaluate(test: number[]): boolean {
     let max = test[0];
     for (let i = 1; i < test.length; i++) {
@@ -364,7 +354,7 @@ export class Minimum extends Condition {
     this.arg = arg;
     this.property = property;
   }
-  validate(input: number[]): void {}
+  validate(): void {}
   evaluate(test: number[]): boolean {
     let min = Number(test[0]);
     for (let i = 1; i < test.length; i++) {
