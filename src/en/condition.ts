@@ -187,11 +187,11 @@ export class Subsequence extends Condition {
       throw new Error("Subsequence is order dependent (permutations only)");
   }
   evaluate(test: number[]): boolean {
-    let j = 0;
-    for (let i = 0; i < this.arg.length && j < test.length; i++) {
-      if (this.arg[i] === test[j]) j++;
+    let matched = 0;
+    for (let i = 0; i < test.length && matched < this.arg.length; i++) {
+      if (test[i] === this.arg[matched]) matched++;
     }
-    return j === test.length;
+    return matched === this.arg.length;
   }
 }
 

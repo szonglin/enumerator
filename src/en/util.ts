@@ -88,4 +88,14 @@ export class Util {
       ? String.fromCharCode(e)
       : e.toString();
   }
+
+  // random permutation
+  static generatePermutation(arr: number[], length: number): number[] {
+    throw new Error("not implemented");
+  }
+
+  // random choice - output is not guaranteed to be sorted
+  static generateChoice(arr: number[], length: number): number[] {
+    throw new Error("not implemented");
+  }
 }

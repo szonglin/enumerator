@@ -10,9 +10,13 @@ import {
   Group,
   NumberInput,
   Anchor,
+  Select,
+  Flex,
+  Popover,
 } from "@mantine/core";
 import { EnumResult } from "../en/enResult";
 import { ResultList } from "./ResultList";
+import { conditionList } from "../en/condition";
 
 export const EnApp = () => {
   const enumerationTypeOptions = [
@@ -57,6 +61,14 @@ export const EnApp = () => {
 
   const handleConditionChange = (conditions: Record<string, string>[]) => {
     setConditions(conditions);
+  };
+
+  const [idCounter, setIdCounter] = useState(0);
+
+  const [showPopover, setShowPopover] = useState(false);
+  const handleAdd = (e: string) => {
+    setConditions([..._conditions, { id: idCounter.toString(), condition: e }]);
+    setIdCounter(idCounter + 1);
   };
 
   return (
@@ -107,14 +119,47 @@ export const EnApp = () => {
         onChange={handleConditionChange}
         selectedConditions={_conditions}
       />
-      <Button
-        variant="gradient"
-        gradient={{ from: "indigo", to: "cyan" }}
-        onClick={handleSubmit}
-        loading={isLoading}
-      >
-        Run
-      </Button>
+      <Flex justify="space-between" align="center">
+        <div>
+          <Popover
+            position="bottom-start"
+            opened={showPopover}
+            onDismiss={() => setShowPopover(false)}
+          >
+            <Popover.Target>
+              <Button
+                onClick={() => setShowPopover((e) => !e)}
+                variant="gradient"
+                gradient={{ from: "indigo", to: "cyan" }}
+                style={{ margin: "5px" }}
+              >
+                Add Condition
+              </Button>
+            </Popover.Target>
+            <Popover.Dropdown>
+              <Select
+                placeholder="Choose a condition"
+                searchable={true}
+                data={conditionList.map((e) => e.condition)}
+                onChange={(e) => {
+                  if (e) handleAdd(e);
+                  setShowPopover(false);
+                }}
+                comboboxProps={{ withinPortal: false }}
+              />
+            </Popover.Dropdown>
+          </Popover>
+          <Button
+            variant="gradient"
+            gradient={{ from: "indigo", to: "cyan" }}
+            onClick={handleSubmit}
+            loading={isLoading}
+          >
+            Run
+          </Button>
+        </div>
+        {/* TODO: <Select data={["normal", "circle", "necklace", "words"]} maw="7em" /> */}
+      </Flex>
       {errorMessage && (
         <Text c="royalblue" fw={"bold"}>
           {errorMessage}
