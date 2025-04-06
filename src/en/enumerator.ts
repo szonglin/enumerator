@@ -13,6 +13,8 @@ export class Enumerator {
   private resultId = 0;
   private inputLimit = 20;
   private conditions: Condition[] = [];
+  private inputCopy = "";
+  private conditionSummary = "";
   constructor(enumerationType: enumerationType) {
     this.enumerationType = enumerationType;
   }
@@ -23,6 +25,7 @@ export class Enumerator {
       throw new Error(`Input must not exceed ${this.inputLimit} elements`);
     if (asArray.some((e) => Number.isNaN(e)))
       throw new Error("Inputs must be numbers or single characters");
+    this.inputCopy = input;
     this.input = asArray;
   };
 
@@ -38,13 +41,15 @@ export class Enumerator {
       throw new Error(
         "Condition error: " + validation.reduce((a, b) => a + b, "")
       );
+
     this.determineEnumerationMethod();
     if (!this.en) throw new Error("An unexpected error occurred");
+
     const _res = this.en.enumerate();
     console.log("completed");
     console.log("\tinput: ", this.input);
     console.log("\tresult:", _res);
-    return { id: this.resultId++, ..._res };
+    return { id: this.resultId++, request: this.summariseRequest(), ..._res };
   };
 
   public setEnumerationType = (enumerationType: enumerationType) => {
@@ -67,6 +72,7 @@ export class Enumerator {
 
   public setConditions = (conditions: Record<string, string>[]) => {
     console.log("read conditions", conditions);
+    this.conditionSummary = conditions.map((e) => e.condition).join(", ");
     const conds = [];
     const cf = new ParseCondition(this);
     for (const c of conditions) conds.push(cf.createCondition(c));
@@ -83,5 +89,13 @@ export class Enumerator {
       this.conditions
     );
     this.en = ens.select();
+  };
+
+  private summariseRequest = () => {
+    return (
+      `${this.enumerationType.substring(0, 4)}, '${this.inputCopy}', length ${
+        this.length
+      }` + (this.conditionSummary && `, [${this.conditionSummary}]`)
+    );
   };
 }

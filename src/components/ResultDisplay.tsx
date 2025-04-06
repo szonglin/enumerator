@@ -9,14 +9,25 @@ export interface ResultDisplayProps {
 
 export const ResultDisplay = ({ result }: ResultDisplayProps) => {
   const [showDetail, setShowDetail] = useState(false);
+  const setNumberSize = (val: number) => {
+    const size = Intl.NumberFormat().format(val).length;
+    if (size < 15) return "lg";
+    if (size < 22) return "md";
+    else return "sm";
+  };
   return (
     <Card shadow="sm" withBorder style={{ margin: "5px", flexShrink: 0 }}>
       <Grid>
         <Grid.Col span={2}>
-          <Text fw={700}>{Intl.NumberFormat().format(result.value)}</Text>
+          <Text fw={700} size={setNumberSize(result.value)}>
+            {Intl.NumberFormat().format(result.value)}
+          </Text>
         </Grid.Col>
-        <Grid.Col span={9}>
+        <Grid.Col span={5}>
           <Text>{result.description}</Text>
+        </Grid.Col>
+        <Grid.Col span={4} fs="italic" c="gray">
+          <Text>{result.request}</Text>
         </Grid.Col>
         <Grid.Col span={1}>
           <Text
