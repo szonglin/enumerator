@@ -60,6 +60,7 @@ export class Permutations extends EnumMethod {
   private enumerate_helper(from: number[], on: number[]): [number, number] {
     // base case: the permutation is generated
     if (on.length === this.length) return [this.evaluate(on) ? 1 : 0, 1];
+    // recursive: choose a value to add
     let [res, total] = [0, 0];
     const used = new Set<number>();
     for (let i = 0; i < from.length; i++) {
@@ -137,19 +138,10 @@ export class DirectPermutations extends EnumMethod {
   }
 }
 
-// any length combinations with no conditions
-// TODO: update to distinguish by value not index
-// also im pretty sure this is not working...
-export class AllCombinations extends EnumMethod {
-  enumerate(): _EnumResult {
-    let total = 0;
-    let res = 0;
-    const mask = Util.mask(this.input.length, this.length);
-    do {
-      total++;
-      const selection = this.input.filter((_, i) => mask[i]);
-      if (this.evaluate(selection)) res++;
-    } while (Util.nextPermutation(mask));
+// default for combinations
+export class Combinations extends EnumMethod {
+  public enumerate(): _EnumResult {
+    const [res, total] = this.enumerate_helper(this.input, []);
     return {
       value: res,
       description: "via brute force evaluation",
@@ -158,6 +150,29 @@ export class AllCombinations extends EnumMethod {
         total
       ).toPrecision(4)}%)`,
     };
+  }
+
+  // essentially we generate all sorted permutations
+  // does not recurse once a permutation becomes unsorted, but there are some sorted permutation
+  // prefixes that cannot lead to a sorted permutation so this will consider more than nCk combinations
+  private enumerate_helper(from: number[], on: number[]): [number, number] {
+    // base case: the combination is generated
+    if (on.length === this.length) return [this.evaluate(on) ? 1 : 0, 1];
+    // recursive: choose a larger value to add
+    let [res, total] = [0, 0];
+    const used = new Set<number>();
+    for (let i = 0; i < from.length; i++) {
+      const selected = from[i];
+      if (used.has(selected)) continue;
+      if (on.length && selected < on[on.length - 1]) continue;
+      used.add(selected);
+      const nextFrom = from.filter((_, _i) => _i !== i);
+      const nextOn = on.concat([selected]);
+      const [recRes, recTotal] = this.enumerate_helper(nextFrom, nextOn);
+      res += recRes;
+      total += recTotal;
+    }
+    return [res, total];
   }
 }
 

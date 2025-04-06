@@ -1,6 +1,6 @@
 import { Condition } from "./condition";
 import {
-  AllCombinations,
+  Combinations,
   AllPermutations,
   DirectPermutations,
   EnumMethod,
@@ -55,8 +55,7 @@ export class EnSelector {
       // if the number of perms exceeds 10^9, give probabilistic answer
     } else {
       // if the number of combs exceeds 10^9, give probabilistic answer
-      return new AllCombinations(this.input, this.conditions, this.length);
+      return new Combinations(this.input, this.conditions, this.length);
     }
-    throw new Error("Unexpected error");
   };
 }
