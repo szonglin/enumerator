@@ -23,7 +23,7 @@ export const ResultDisplay = ({ result }: ResultDisplayProps) => {
   const detailDisplay = (value: number, detail: string) => {
     const addWarning =
       value > Number.MAX_SAFE_INTEGER
-        ? ", this value exceeded the max safe integer limit - it may be inaccurate"
+        ? ", this value exceeded the max safe integer limit - it may be affected by floating point imprecision"
         : "";
     return detail + addWarning;
   };

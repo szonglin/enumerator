@@ -16,6 +16,11 @@ import {
   Subsequence,
   Sum,
   CountOverlap,
+  Derangement,
+  Average,
+  Median,
+  MaxFrequency,
+  MaxFreqElt,
 } from "./condition";
 import { Enumerator } from "./enumerator";
 import { Util } from "./util";
@@ -100,6 +105,8 @@ export class ParseCondition {
         return new Distinct(this.en);
       case "palindrome":
         return new Palindrome(this.en);
+      case "derangement":
+        return new Derangement(this.en);
       // number input type
       case "sum":
         [nArg, comparison] = getComparisonArg(
@@ -108,21 +115,49 @@ export class ParseCondition {
           condition.comparison
         );
         return new Sum(this.en, nArg, comparison);
+      case "average":
+        [nArg, comparison] = getComparisonArg(
+          true,
+          condition.arg,
+          condition.comparison
+        );
+        return new Average(this.en, nArg, comparison);
+      case "median":
+        [nArg, comparison] = getComparisonArg(
+          true,
+          condition.arg,
+          condition.comparison
+        );
+        return new Median(this.en, nArg, comparison);
       // number or character input type
       case "maximum":
         [nArg, comparison] = getComparisonArg(
-          false,
+          true,
           condition.arg,
           condition.comparison
         );
         return new Maximum(this.en, nArg, comparison);
       case "minimum":
         [nArg, comparison] = getComparisonArg(
-          false,
+          true,
           condition.arg,
           condition.comparison
         );
         return new Minimum(this.en, nArg, comparison);
+      case "maxFrequency":
+        [nArg, comparison] = getComparisonArg(
+          true,
+          condition.arg,
+          condition.comparison
+        );
+        return new MaxFrequency(this.en, nArg, comparison);
+      case "maxFreqElt":
+        [nArg, comparison] = getComparisonArg(
+          true,
+          condition.arg,
+          condition.comparison
+        );
+        return new MaxFreqElt(this.en, nArg, comparison);
       // input, number, comparison type
       case "count":
         [arg, arg2, comparison] = getINCArg(

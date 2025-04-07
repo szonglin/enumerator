@@ -11,7 +11,7 @@ export class Enumerator {
   public length = 0;
   private en: EnumMethod | null = null;
   private resultId = 0;
-  private inputLimit = 20;
+  static readonly INPUT_LIMIT = 32;
   private conditions: Condition[] = [];
   private inputCopy = "";
   private conditionSummary = "";
@@ -22,8 +22,10 @@ export class Enumerator {
 
   public setInput = (input: string) => {
     const asArray = Util.inputToArray(input);
-    if (asArray.length > this.inputLimit)
-      throw new Error(`Input must not exceed ${this.inputLimit} elements`);
+    if (asArray.length > Enumerator.INPUT_LIMIT)
+      throw new Error(
+        `Input must not exceed ${Enumerator.INPUT_LIMIT} elements`
+      );
     if (asArray.some((e) => Number.isNaN(e)))
       throw new Error("Inputs must be numbers or single characters");
     this.inputCopy = input;
