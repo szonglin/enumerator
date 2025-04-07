@@ -1,5 +1,14 @@
-import { Condition, EndsWith, StartsWith } from "./condition";
+import {
+  Condition,
+  Derangement,
+  EndsWith,
+  Maximum,
+  Minimum,
+  StartsWith,
+  Sum,
+} from "./condition";
 import { EnumResult } from "./enResult";
+import { EnSelector } from "./enSelector";
 import { Util } from "./util";
 
 type _EnumResult = Pick<
@@ -24,8 +33,13 @@ export abstract class EnumMethod {
     return true;
   }
   public abstract enumerate(): _EnumResult;
+  // assume type and reps is accurate, determine if input is acceptable
+  public abstract accepts(): boolean;
   public enValue(): number {
     return this.enumerate().value;
+  }
+  protected noConds(): boolean {
+    return !this.conditions.length;
   }
 }
 
@@ -33,6 +47,9 @@ export abstract class EnumMethod {
 
 // brute force permutations with less overhead when the permutation is on the full input
 export class AllPermutations extends EnumMethod {
+  public accepts(): boolean {
+    return this.length === this.input.length;
+  }
   public enumerate(): _EnumResult {
     let [res, total] = [0, 0];
     const _input = [...this.input];
@@ -54,6 +71,9 @@ export class AllPermutations extends EnumMethod {
 
 // default for permutations
 export class Permutations extends EnumMethod {
+  public accepts(): boolean {
+    return true;
+  }
   public enumerate(): _EnumResult {
     const [res, total] = this.enumerate_helper(this.input, []);
     return {
@@ -90,6 +110,13 @@ export class Permutations extends EnumMethod {
 
 // trivial cases: length > input.length, length = 0, input = []
 export class Trivial extends EnumMethod {
+  public accepts(): boolean {
+    return (
+      this.length > this.input.length ||
+      this.length === 0 ||
+      this.input.length === 0
+    );
+  }
   public enumerate(): _EnumResult {
     if (this.length !== 0) {
       return {
@@ -111,6 +138,9 @@ export class Trivial extends EnumMethod {
 
 // full length permutations with no conditions
 export class DirectPermutations extends EnumMethod {
+  public accepts(): boolean {
+    return this.length === this.input.length && this.noConds();
+  }
   public enumerate(): _EnumResult {
     const multiSet = new Map<number, number>();
     this.input.forEach((e) => {
@@ -154,6 +184,9 @@ export class DirectPermutations extends EnumMethod {
 
 // non-multiset permutations with no conditions
 export class DirUnqPermutations extends EnumMethod {
+  public accepts(): boolean {
+    return Util.isDistinct(this.input) && this.noConds();
+  }
   public enumerate(): _EnumResult {
     return {
       value: Util.nPr(this.input.length, this.length),
@@ -166,6 +199,9 @@ export class DirUnqPermutations extends EnumMethod {
 
 // non-multiset combinations with no conditions
 export class DirUnqCombinations extends EnumMethod {
+  public accepts(): boolean {
+    return Util.isDistinct(this.input) && this.noConds();
+  }
   public enumerate(): _EnumResult {
     return {
       value: Util.nCr(this.input.length, this.length),
@@ -178,6 +214,9 @@ export class DirUnqCombinations extends EnumMethod {
 
 // default for combinations
 export class Combinations extends EnumMethod {
+  public accepts(): boolean {
+    return true;
+  }
   public enumerate(): _EnumResult {
     const [res, total] = this.enumerate_helper(this.input, []);
     return {
@@ -217,12 +256,23 @@ export class Combinations extends EnumMethod {
 
 // reduces an all Contains perm to a Direct one
 export class ContainsPermutations extends EnumMethod {
+  public accepts(): boolean {
+    return false;
+  }
   enumerate(): _EnumResult {
     throw new Error("Method not implemented.");
   }
 }
 
 export class DerangementPermutations extends EnumMethod {
+  public accepts(): boolean {
+    return (
+      Util.isDistinct(this.input) &&
+      this.input.length === this.length &&
+      this.conditions.length === 1 &&
+      this.conditions[0] instanceof Derangement
+    );
+  }
   public enumerate(): _EnumResult {
     const count = Array(this.input.length + 1).fill(0);
     [count[0], count[1]] = [1, 0];
@@ -230,52 +280,78 @@ export class DerangementPermutations extends EnumMethod {
       count[i] = (i - 1) * (count[i - 1] + count[i - 2]);
     return {
       value: count[this.input.length],
-      description: "via direct calculation",
+      description: "via evaluation using a reccurence",
       detail: "using the recurrence for derangements",
       isApproximation: false,
     };
   }
 }
 
-// reduces a starts/ends with permutation to a smaller permutation
-export class StartEndPermutations extends EnumMethod {
+export class SumCombinations extends EnumMethod {
+  public accepts(): boolean {
+    return (
+      this.conditions.length === 1 &&
+      this.conditions[0] instanceof Sum &&
+      this.conditions[0].getArg() < 1 << 10 &&
+      this.input.every((e) => e >= 0) &&
+      (this.determineMaxSum() < 1 << 10 ||
+        this.conditions[0].getProperty() !== "more")
+    );
+  }
   public enumerate(): _EnumResult {
-    let prefix: number[] = [];
-    let suffix: number[] = [];
-
-    for (const c of this.conditions) {
-      if (c instanceof StartsWith && c.arg.length > prefix.length)
-        prefix = c.arg;
-      if (c instanceof EndsWith && c.arg.length > suffix.length) suffix = c.arg;
+    let value = 0;
+    const possibles: number[] = [];
+    // possible target values as a range
+    const arg = (this.conditions[0] as Sum).getArg();
+    const cmp = (this.conditions[0] as Sum).getProperty();
+    if (cmp === "equal") possibles.push(arg);
+    else if (cmp === "less") {
+      for (let i = 0; i < arg; i++) possibles.push(i);
+    } else if (cmp === "more") {
+      for (let i = arg + 1; i <= this.determineMaxSum(); i++) possibles.push(i);
     }
-
-    for (const c of this.conditions) {
-      if (
-        (c instanceof StartsWith && !Util.isPrefix(c.arg, prefix)) ||
-        (c instanceof EndsWith && !Util.isSuffix(c.arg, suffix))
-      )
-        return {
-          value: 0,
-          description: "via direct calculation",
-          detail: "the starts with or ends with conditions are contradictory",
-          isApproximation: false,
-        };
-    }
-
-    // TODO:
-    // case 1: start and end define the permutation (start + end )
-
+    for (const e of possibles) value += this.enumerate_helper(e);
     return {
-      value: 0,
-      description: "",
-      detail: "",
+      value,
+      description: "via evaluation using a recurrence",
+      detail: "using a recurrence for combination sums",
       isApproximation: false,
     };
   }
+  private determineMaxSum(): number {
+    const sortedInput = [...this.input];
+    sortedInput.sort((a, b) => a - b);
+    let maxsum = sortedInput.reduce((a, b) => a + b, 0);
+    for (let i = 0; i < sortedInput.length - this.length; i++)
+      maxsum -= sortedInput[i];
+    return maxsum;
+  }
+  private enumerate_helper(target: number): number {
+    const count = Array.from({ length: this.input.length + 1 }, () => {
+      return Array.from({ length: this.length + 1 }, () => {
+        return Array(target + 1).fill(0);
+      });
+    });
+    for (let i = 0; i <= this.input.length; i++) count[i][0][0] = 1;
+    for (let i = 1; i <= this.input.length; i++)
+      for (let j = 1; j <= Math.min(i, this.length); j++)
+        for (let k = 0; k <= target; k++) {
+          const cv = this.input[i - 1];
+          count[i][j][k] =
+            count[i - 1][j][k] + (k >= cv ? count[i - 1][j - 1][k - cv] : 0);
+        }
+    return count[this.input.length][this.length][target];
+  }
 }
+
+/* Reduce to smaller case enumerators */
+// coming soon
 
 /* With Repetition Enumerators */
 export class PermutationsRp extends EnumMethod {
+  public accepts(): boolean {
+    return true;
+  }
   public enumerate(): _EnumResult {
     // we can ignore repetitions from the input
     const uniqueInput = Util.removeDuplicates(this.input);
@@ -308,6 +384,9 @@ export class PermutationsRp extends EnumMethod {
 }
 
 export class DirectPermutationsRp extends EnumMethod {
+  public accepts(): boolean {
+    return this.noConds();
+  }
   public enumerate(): _EnumResult {
     const uniqueInput = Util.removeDuplicates(this.input);
     const res = Math.pow(uniqueInput.length, this.length);
@@ -321,6 +400,9 @@ export class DirectPermutationsRp extends EnumMethod {
 }
 
 export class CombinationsRp extends EnumMethod {
+  public accepts(): boolean {
+    return true;
+  }
   public enumerate(): _EnumResult {
     const uniqueInput = Util.removeDuplicates(this.input);
     const [res, total] = this.enumerate_helper(uniqueInput, []);
@@ -354,6 +436,9 @@ export class CombinationsRp extends EnumMethod {
 }
 
 export class DirectCombinationsRp extends EnumMethod {
+  public accepts(): boolean {
+    return this.noConds();
+  }
   public enumerate(): _EnumResult {
     const uniqueInput = Util.removeDuplicates(this.input);
     const res = Util.nCr(uniqueInput.length + this.length - 1, this.length);
@@ -374,9 +459,12 @@ export class DirectCombinationsRp extends EnumMethod {
 
 abstract class PrEnumMethod extends EnumMethod {
   static readonly PROB_RUNS: number = 1 << 21;
-  static readonly PROB_ACCEPTABLE: number = 24;
+  static readonly PROB_ACCEPTABLE: number = 4;
   static readonly PROB_WARNING: string =
     "this result was determined probabilistically as the input was too large, so it may be inaccurate: ";
+  public accepts(): boolean {
+    return true;
+  }
 }
 
 /* Probabilistic Enumerators */
@@ -385,6 +473,7 @@ abstract class PrEnumMethod extends EnumMethod {
 // the two no-repeat methods are very wasteful, but it seems there isnt a good
 // way around it. they dont work well for inputs which are very long
 export class PrPermutations extends PrEnumMethod {
+  // would be really nice if this can be made more efficient
   enumerate(): _EnumResult {
     // are the distributions the same? they seem to be, empirically, but...
     const noDupInput = Util.removeDuplicates(this.input);

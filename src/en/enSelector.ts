@@ -16,6 +16,10 @@ import {
   PrPermutationsRp,
   PrCombinations,
   PrCombinationsRp,
+  DerangementPermutations,
+  SumCombinations,
+  MaximumReduce,
+  MinimumReduce,
 } from "./enMethod";
 import { enumerationType, Util } from "./util";
 
@@ -38,6 +42,12 @@ export class EnSelector {
     this.enumerationType = enumerationType;
     this.repeats = repeats;
   }
+  public setInput(to: number[]) {
+    this.input = to;
+  }
+  public setConditions(to: Condition[]) {
+    this.conditions = to;
+  }
   private testlog(): void {
     console.log("select");
     console.log(
@@ -54,24 +64,28 @@ export class EnSelector {
 
   static readonly MAX_COMPLEXITY = 1 << 28;
 
-  private isDistinct = (): boolean => {
-    return new Set(this.input).size === this.input.length;
-  };
-
   private upperBound = (): number => {
     if (this.repeats && this.enumerationType === "permutation")
-      return new DirectPermutationsRp(this.input, [], this.length).enValue();
+      return new DirectPermutationsRp(
+        Util.removeDuplicates(this.input),
+        [],
+        this.length
+      ).enValue();
     if (this.repeats && this.enumerationType === "combination")
       // using permutations because the recursion is O(n!)
-      return new DirectPermutationsRp(this.input, [], this.length).enValue();
+      return new DirectPermutationsRp(
+        Util.removeDuplicates(this.input),
+        [],
+        this.length
+      ).enValue();
     if (!this.repeats && this.enumerationType === "permutation")
       return Math.min(
         new DirectPermutations(this.input, [], this.length).enValue(),
         Util.nPr(this.input.length, this.length)
       );
     if (!this.repeats && this.enumerationType === "combination")
-      // same as above
-      return Util.nPr(this.input.length, this.length);
+      // this condition is relatively lax compared to the others
+      return Util.nCr(this.input.length, this.input.length >> 1);
     throw new Error("Unexpected error");
   };
 
@@ -87,60 +101,92 @@ export class EnSelector {
     );
   };
 
-  private noConds = (): boolean => {
-    return this.conditions.length === 0;
-  };
+  // options in order of [direct] [reduce] [brute force]
+  // last element of brute force must have accepts always true
 
   private handleNoRepeatPerms = (): EnumMethod => {
     /* fast cases */
     // permutations with no conditions can be calculated directly
-    if (this.input.length === this.length && this.noConds())
-      return new DirectPermutations(this.input, this.conditions, this.length);
-    if (this.isDistinct() && !this.conditions.length)
-      return new DirUnqPermutations(this.input, this.conditions, this.length);
+    const directOptions = [
+      new DirectPermutations(this.input, this.conditions, this.length),
+      new DirUnqPermutations(this.input, this.conditions, this.length),
+      new DerangementPermutations(this.input, this.conditions, this.length),
+    ];
+    for (const method of directOptions) if (method.accepts()) return method;
 
-    /* brute force methods */
+    /* check fall back to probabilistic */
     if (this.estimate() > EnSelector.MAX_COMPLEXITY)
       return new PrPermutations(this.input, this.conditions, this.length);
 
-    // if input length is equal to length, use AllPermutations with less overhead
-    if (this.input.length === this.length)
-      return new AllPermutations(this.input, this.conditions, this.length);
-    // fallback to default perms generator
-    return new Permutations(this.input, this.conditions, this.length);
+    /* brute force methods */
+    const bfOptions = [
+      new AllPermutations(this.input, this.conditions, this.length),
+      new Permutations(this.input, this.conditions, this.length),
+    ];
+    for (const method of bfOptions) if (method.accepts()) return method;
+
+    throw new Error("Failed to find an iterator");
   };
 
   private handleRepeatPerms = (): EnumMethod => {
     /* fast cases */
-    if (this.noConds())
-      return new DirectPermutationsRp(this.input, this.conditions, this.length);
+    const directOptions = [
+      new DirectPermutationsRp(this.input, this.conditions, this.length),
+    ];
+    for (const method of directOptions) if (method.accepts()) return method;
 
-    /* brute force methods */
+    /* check fall back to probabilistic */
     if (this.estimate() > EnSelector.MAX_COMPLEXITY)
       return new PrPermutationsRp(this.input, this.conditions, this.length);
-    return new PermutationsRp(this.input, this.conditions, this.length);
+
+    /* brute force methods */
+    const bfOptions = [
+      new PermutationsRp(this.input, this.conditions, this.length),
+    ];
+    for (const method of bfOptions) if (method.accepts()) return method;
+
+    throw new Error("Failed to find an iterator");
   };
 
   private handleNoRepeatCombs = (): EnumMethod => {
     /* fast cases */
-    if (this.isDistinct() && this.noConds())
-      return new DirUnqCombinations(this.input, this.conditions, this.length);
+    const directOptions = [
+      new DirUnqCombinations(this.input, this.conditions, this.length),
+      new SumCombinations(this.input, this.conditions, this.length),
+    ];
+    for (const method of directOptions) if (method.accepts()) return method;
 
-    /* brute force methods */
+    /* check fall back to probabilistic */
     if (this.estimate() > EnSelector.MAX_COMPLEXITY)
       return new PrCombinations(this.input, this.conditions, this.length);
-    return new Combinations(this.input, this.conditions, this.length);
+
+    /* brute force methods */
+    const bfOptions = [
+      new Combinations(this.input, this.conditions, this.length),
+    ];
+    for (const method of bfOptions) if (method.accepts()) return method;
+
+    throw new Error("Failed to find an iterator");
   };
 
   private handleRepeatCombs = (): EnumMethod => {
     /* fast cases */
-    if (this.conditions.length === 0)
-      return new DirectCombinationsRp(this.input, this.conditions, this.length);
+    const directOptions = [
+      new DirectCombinationsRp(this.input, this.conditions, this.length),
+    ];
+    for (const method of directOptions) if (method.accepts()) return method;
 
-    /* brute force methods */
+    /* check fall back to probabilistic */
     if (this.estimate() > EnSelector.MAX_COMPLEXITY)
       return new PrCombinationsRp(this.input, this.conditions, this.length);
-    return new CombinationsRp(this.input, this.conditions, this.length);
+
+    /* brute force methods */
+    const bfOptions = [
+      new CombinationsRp(this.input, this.conditions, this.length),
+    ];
+    for (const method of bfOptions) if (method.accepts()) return method;
+
+    throw new Error("failed to find an iterator");
   };
 
   public select = (): EnumMethod => {

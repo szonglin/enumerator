@@ -306,6 +306,12 @@ export class Sum extends Condition {
     this.arg = arg;
     this.property = property;
   }
+  public getArg(): number {
+    return this.arg;
+  }
+  public getProperty(): comparisonOption {
+    return this.property;
+  }
   validate(): void {
     if (isNaN(this.arg)) throw new Error("Invalid argument");
     if (!this.enumerator.input.every((e) => !isNaN(Number(e))))
@@ -347,6 +353,12 @@ export class Maximum extends Condition {
     this.arg = arg;
     this.property = property;
   }
+  public getArg(): number {
+    return this.arg;
+  }
+  public getProperty(): comparisonOption {
+    return this.property;
+  }
   validate(): void {}
   evaluate(test: number[]): boolean {
     let max = test[0];
@@ -365,6 +377,12 @@ export class Minimum extends Condition {
     super(enumerator);
     this.arg = arg;
     this.property = property;
+  }
+  public getArg(): number {
+    return this.arg;
+  }
+  public getProperty(): comparisonOption {
+    return this.property;
   }
   validate(): void {}
   evaluate(test: number[]): boolean {
