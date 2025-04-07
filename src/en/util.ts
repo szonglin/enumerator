@@ -67,6 +67,10 @@ export class Util {
     return true;
   }
 
+  static isDistinct(arr: number[]): boolean {
+    return new Set(arr).size === arr.length;
+  }
+
   // checks if an array is sorted
   static isSorted(arr: number[]): boolean {
     for (let i = 0; i < arr.length - 1; i++) {

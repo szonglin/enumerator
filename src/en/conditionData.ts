@@ -10,6 +10,12 @@ export const conditionData = [
       "contains the argument as a subsequence, eg. 'category' contains 'coy'",
   },
   {
+    condition: "count",
+    description:
+      "number of appearances of the first argument (as a subarray) compared with the second with only distinct (non-overlapping)" +
+      " terms counted, eg. 'banana' has 1 copy of 'ana'",
+  },
+  {
     condition: "contains",
     description:
       "contains the elements of the argument in any order - supports repeat values, eg. 'trace' contains 'art'",
@@ -21,12 +27,6 @@ export const conditionData = [
   {
     condition: "endsWith",
     description: "ends with the argument, eg. 'yellow' ends with 'low'",
-  },
-  {
-    condition: "count",
-    description:
-      "number of appearances of the first argument (as a subarray) compared with the second with only distinct (non-overlapping)" +
-      " terms counted, eg. 'banana' has 1 copy of 'ana'",
   },
   {
     condition: "increasing",
