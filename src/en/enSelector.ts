@@ -191,7 +191,11 @@ export class EnSelector {
     this.testlog();
     this.estimate();
     // trivial permutations
-    if (this.length === 0 || this.length > this.input.length)
+    if (
+      this.length === 0 ||
+      (this.length > this.input.length && !this.repeats) ||
+      this.input.length === 0
+    )
       return new Trivial(this.input, this.conditions, this.length);
     if (this.repeats && this.enumerationType === "permutation")
       return this.handleRepeatPerms();

@@ -21,6 +21,7 @@ import {
   Median,
   MaxFrequency,
   MaxFreqElt,
+  Excludes,
 } from "./condition";
 import { Enumerator } from "./enumerator";
 import { Util } from "./util";
@@ -94,6 +95,9 @@ export class ParseCondition {
       case "contains":
         arg = getInputArg(condition.arg);
         return new Contains(this.en, arg);
+      case "excludes":
+        arg = getInputArg(condition.arg);
+        return new Excludes(this.en, arg);
       case "startsWith":
         arg = getInputArg(condition.arg);
         return new StartsWith(this.en, arg);

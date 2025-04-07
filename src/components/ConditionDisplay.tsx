@@ -45,6 +45,7 @@ export const ConditionDisplay = ({
       case "startsWith":
       case "endsWith":
       case "contains":
+      case "excludes":
         return (
           <SubArgOptions
             conditionValues={conditionValues}

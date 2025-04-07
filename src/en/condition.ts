@@ -126,6 +126,23 @@ export class Count extends Condition {
   }
 }
 
+export class Excludes extends Condition {
+  arg: number[];
+  constructor(enumerator: Enumerator, arg: number[]) {
+    super(enumerator);
+    this.arg = arg;
+  }
+  validate(): void {
+    if (!this.arg.length) throw new Error("Missing argument");
+  }
+  evaluate(test: number[]): boolean {
+    for (const e of this.arg) {
+      if (test.includes(e)) return false;
+    }
+    return true;
+  }
+}
+
 export class CountOverlap extends Condition {
   arg: number[];
   amount: number;

@@ -21,6 +21,11 @@ export const conditionData = [
       "contains the elements of the argument in any order - supports repeat values, eg. 'trace' contains 'art'",
   },
   {
+    condition: "excludes",
+    description:
+      "does not contain any of the elements of the argument in any order, eg. 'warm' excludes 'hot'",
+  },
+  {
     condition: "startsWith",
     description: "begins with the argument, eg. 'teacher' starts with 'tea'",
   },
