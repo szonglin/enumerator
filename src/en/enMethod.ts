@@ -1,14 +1,5 @@
-import {
-  Condition,
-  Derangement,
-  EndsWith,
-  Maximum,
-  Minimum,
-  StartsWith,
-  Sum,
-} from "./condition";
+import { Condition, Derangement, Sum } from "./condition";
 import { EnumResult } from "./enResult";
-import { EnSelector } from "./enSelector";
 import { Util } from "./util";
 
 type _EnumResult = Pick<

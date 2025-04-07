@@ -18,8 +18,6 @@ import {
   PrCombinationsRp,
   DerangementPermutations,
   SumCombinations,
-  MaximumReduce,
-  MinimumReduce,
 } from "./enMethod";
 import { enumerationType, Util } from "./util";
 
