@@ -1,82 +1,5 @@
 import { Enumerator } from "./enumerator";
 
-export const conditionList = [
-  {
-    condition: "increasing",
-    description:
-      "values are in increasing order, strictly increasing requires each value to be strictly greater than the previous",
-  },
-  {
-    condition: "decreasing",
-    description:
-      "values are in decreasing order, strictly decreasing requires each value to be strictly less than the previous",
-  },
-  {
-    condition: "subarray",
-    description:
-      "contains the argument as adjacent values, eg. 'sparkler' contains 'park'",
-  },
-  {
-    condition: "subsequence",
-    description:
-      "contains the argument as a subsequence, eg. 'category' contains 'coy'",
-  },
-  {
-    condition: "contains",
-    description:
-      "contains the elements of the argument in any order, eg. 'trace' contains 'art'",
-  },
-  {
-    condition: "startsWith",
-    description: "begins with the argument, eg. 'teacher' starts with 'tea'",
-  },
-  {
-    condition: "endsWith",
-    description: "ends with the argument, eg. 'yellow' ends with 'low'",
-  },
-  {
-    condition: "palindrome",
-    description: "is the same as its reverse, eg. 'radar'",
-  },
-  {
-    condition: "distinct",
-    description: "has all elements distinct, eg. 'copyright'",
-  },
-  {
-    condition: "sum",
-    description:
-      "sum of elements compared with the argument, eg. '1, 2, 3' = '6'",
-  },
-  {
-    condition: "maximum",
-    description:
-      "largest element compared with the argument, eg. '1, 2, 3' < '4' or 'fazed' = 'z'",
-  },
-  {
-    condition: "minimum",
-    description:
-      "smallest element compared with the argument, eg. '1, 2, 3' > '0' or 'glass' = 'a'",
-  },
-  {
-    condition: "count",
-    description:
-      "number of appearances of the first argument (as a subarray) compared with the second with only distinct (non-overlapping)" +
-      " terms counted, eg. 'banana' has 1 copy of 'ana'",
-  },
-  {
-    condition: "countOverlap",
-    description:
-      "number of appearances of the first argument (as a subarray) compared with the second, including overlapping" +
-      " terms, eg. 'banana' has 2 copies of 'ana'",
-  },
-  {
-    condition: "subseqCount",
-    description:
-      "number of appearances of the first argument (as a subsequence) compared with the second, eg. 'banana' has 4" +
-      " subsequences of 'ana'",
-  },
-];
-
 export abstract class Condition {
   enumerator: Enumerator;
   constructor(enumerator: Enumerator) {
@@ -152,9 +75,15 @@ export class Contains extends Condition {
     if (!this.arg.length) throw new Error("Missing argument");
   }
   evaluate(test: number[]): boolean {
-    // check what the optimal approach is (for, for), (method, method), (for, method), (method, for)
+    const ms = new Map<number, number>();
+    for (const e of test) {
+      const v = ms.get(e);
+      ms.set(e, v ? v + 1 : 1);
+    }
     for (const e of this.arg) {
-      if (!test.includes(e)) return false;
+      const v = ms.get(e);
+      if (!v) return false;
+      ms.set(e, v - 1);
     }
     return true;
   }
@@ -445,5 +374,109 @@ export class Minimum extends Condition {
       if (current < min) min = current;
     }
     return evaluateComparison(this.property, min, this.arg);
+  }
+}
+
+export class Derangement extends Condition {
+  validate(): void {
+    if (this.enumerator.enumerationType !== "permutation")
+      throw new Error("Derangement is order dependent (permutations only)");
+  }
+  evaluate(test: number[]): boolean {
+    for (let i = 0; i < test.length; i++) {
+      if (test[i] === this.enumerator.input[i]) return false;
+    }
+    return true;
+  }
+}
+
+export class MaxFrequency extends Condition {
+  arg: number;
+  property: comparisonOption;
+  constructor(enumerator: Enumerator, arg: number, property: comparisonOption) {
+    super(enumerator);
+    this.arg = arg;
+    this.property = property;
+  }
+  validate(): void {}
+  evaluate(test: number[]): boolean {
+    const ms = new Map<number, number>();
+    let hf = 0;
+    for (const e of test) {
+      const v = ms.get(e);
+      ms.set(e, v ? v + 1 : 1);
+      const w = ms.get(e);
+      if (w && w > hf) hf = w;
+    }
+    return evaluateComparison(this.property, hf, this.arg);
+  }
+}
+
+export class MaxFreqElt extends Condition {
+  arg: number;
+  property: comparisonOption;
+  constructor(enumerator: Enumerator, arg: number, property: comparisonOption) {
+    super(enumerator);
+    this.arg = arg;
+    this.property = property;
+  }
+  validate(): void {}
+  evaluate(test: number[]): boolean {
+    const ms = new Map<number, number>();
+    let hf = 0;
+    for (const e of test) {
+      const v = ms.get(e);
+      ms.set(e, v ? v + 1 : 1);
+      const w = ms.get(e);
+      if (w && w > hf) hf = w;
+    }
+    const maxFreqElts = Array.from(ms.entries())
+      .filter((e) => e[1] === hf)
+      .map((e) => e[0]);
+    return maxFreqElts.some((e) =>
+      evaluateComparison(this.property, e, this.arg)
+    );
+  }
+}
+
+export class Average extends Condition {
+  arg: number;
+  property: comparisonOption;
+  constructor(enumerator: Enumerator, arg: number, property: comparisonOption) {
+    super(enumerator);
+    this.arg = arg;
+    this.property = property;
+  }
+  validate(): void {
+    if (isNaN(this.arg)) throw new Error("Invalid argument");
+    if (!this.enumerator.input.every((e) => !isNaN(Number(e))))
+      throw new Error("Average arguments must be numbers");
+  }
+  evaluate(test: number[]): boolean {
+    return test.reduce((a, b) => a + b, 0) === this.arg * test.length;
+  }
+}
+
+export class Median extends Condition {
+  arg: number;
+  property: comparisonOption;
+  constructor(enumerator: Enumerator, arg: number, property: comparisonOption) {
+    super(enumerator);
+    this.arg = arg;
+    this.property = property;
+  }
+  validate(): void {
+    if (isNaN(this.arg)) throw new Error("Invalid argument");
+    if (!this.enumerator.input.every((e) => !isNaN(Number(e))))
+      throw new Error("Median arguments must be numbers");
+  }
+  evaluate(test: number[]): boolean {
+    const copy = [...test];
+    copy.sort((a, b) => a - b);
+    const median =
+      copy.length % 2
+        ? copy[copy.length >> 1]
+        : (copy[(copy.length >> 1) - 1] + copy[copy.length >> 1]) / 2;
+    return evaluateComparison(this.property, median, this.arg);
   }
 }

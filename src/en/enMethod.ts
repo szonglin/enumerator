@@ -1,4 +1,4 @@
-import { Condition } from "./condition";
+import { Condition, EndsWith, StartsWith } from "./condition";
 import { EnumResult } from "./enResult";
 import { Util } from "./util";
 
@@ -8,7 +8,6 @@ type _EnumResult = Pick<
 >;
 
 export abstract class EnumMethod {
-  static readonly PROB_RUNS = 1 << 21;
   input: number[];
   conditions: Condition[];
   length: number;
@@ -71,7 +70,8 @@ export class Permutations extends EnumMethod {
   private enumerate_helper(from: number[], on: number[]): [number, number] {
     // base case: the permutation is generated
     if (on.length === this.length) return [this.evaluate(on) ? 1 : 0, 1];
-    // recursive: choose a value to add
+    // recursive: choose a value to add (avoiding duplicates by not recursing on
+    //            any seen sets)
     let [res, total] = [0, 0];
     const used = new Set<number>();
     for (let i = 0; i < from.length; i++) {
@@ -88,7 +88,7 @@ export class Permutations extends EnumMethod {
   }
 }
 
-// trivial cases: length > input, length = 0, input = []
+// trivial cases: length > input.length, length = 0, input = []
 export class Trivial extends EnumMethod {
   public enumerate(): _EnumResult {
     if (this.length !== 0) {
@@ -152,6 +152,7 @@ export class DirectPermutations extends EnumMethod {
   }
 }
 
+// non-multiset permutations with no conditions
 export class DirUnqPermutations extends EnumMethod {
   public enumerate(): _EnumResult {
     return {
@@ -163,6 +164,7 @@ export class DirUnqPermutations extends EnumMethod {
   }
 }
 
+// non-multiset combinations with no conditions
 export class DirUnqCombinations extends EnumMethod {
   public enumerate(): _EnumResult {
     return {
@@ -213,15 +215,64 @@ export class Combinations extends EnumMethod {
   }
 }
 
-// export class ContainsPermutations extends EnumMethod {
-//   // reduces an all Contains perm to a Direct one
-//   static applicable(conditions: Condition[]): boolean {
-//     return conditions.every((e) => e instanceof Contains);
-//   }
-//   enumerate(): _EnumResult {
-//     throw new Error("Method not implemented.");
-//   }
-// }
+// reduces an all Contains perm to a Direct one
+export class ContainsPermutations extends EnumMethod {
+  enumerate(): _EnumResult {
+    throw new Error("Method not implemented.");
+  }
+}
+
+export class DerangementPermutations extends EnumMethod {
+  public enumerate(): _EnumResult {
+    const count = Array(this.input.length + 1).fill(0);
+    [count[0], count[1]] = [1, 0];
+    for (let i = 2; i <= this.input.length; i++)
+      count[i] = (i - 1) * (count[i - 1] + count[i - 2]);
+    return {
+      value: count[this.input.length],
+      description: "via direct calculation",
+      detail: "using the recurrence for derangements",
+      isApproximation: false,
+    };
+  }
+}
+
+// reduces a starts/ends with permutation to a smaller permutation
+export class StartEndPermutations extends EnumMethod {
+  public enumerate(): _EnumResult {
+    let prefix: number[] = [];
+    let suffix: number[] = [];
+
+    for (const c of this.conditions) {
+      if (c instanceof StartsWith && c.arg.length > prefix.length)
+        prefix = c.arg;
+      if (c instanceof EndsWith && c.arg.length > suffix.length) suffix = c.arg;
+    }
+
+    for (const c of this.conditions) {
+      if (
+        (c instanceof StartsWith && !Util.isPrefix(c.arg, prefix)) ||
+        (c instanceof EndsWith && !Util.isSuffix(c.arg, suffix))
+      )
+        return {
+          value: 0,
+          description: "via direct calculation",
+          detail: "the starts with or ends with conditions are contradictory",
+          isApproximation: false,
+        };
+    }
+
+    // TODO:
+    // case 1: start and end define the permutation (start + end )
+
+    return {
+      value: 0,
+      description: "",
+      detail: "",
+      isApproximation: false,
+    };
+  }
+}
 
 /* With Repetition Enumerators */
 export class PermutationsRp extends EnumMethod {
@@ -321,52 +372,142 @@ export class DirectCombinationsRp extends EnumMethod {
   }
 }
 
+abstract class PrEnumMethod extends EnumMethod {
+  static readonly PROB_RUNS: number = 1 << 21;
+  static readonly PROB_ACCEPTABLE: number = 24;
+  static readonly PROB_WARNING: string =
+    "this result was determined probabilistically as the input was too large, so it may be inaccurate: ";
+}
+
 /* Probabilistic Enumerators */
+// todo: these need to be tested more
 // approximates the number of permutations using probabilities
-// TODO:
-export class PrPermutations extends EnumMethod {
+// the two no-repeat methods are very wasteful, but it seems there isnt a good
+// way around it. they dont work well for inputs which are very long
+export class PrPermutations extends PrEnumMethod {
   enumerate(): _EnumResult {
+    // are the distributions the same? they seem to be, empirically, but...
+    const noDupInput = Util.removeDuplicates(this.input);
+    let [passed, valid] = [0, 0];
+    for (let i = 0; i < PrEnumMethod.PROB_RUNS; i++) {
+      const g = Util.randPermRp(noDupInput, this.length);
+      if (Util.subMultiset(g, this.input)) {
+        valid++;
+        if (this.evaluate(g)) passed++;
+      }
+    }
+    if (valid < PrEnumMethod.PROB_ACCEPTABLE)
+      return {
+        value: NaN,
+        description: "the input was too large",
+        detail:
+          "attempted to approximate but the input was too large to run in time, sorry :< - you can get an upper bound for the value by allowing repeats, as the generator for that option is much more efficient",
+        isApproximation: false,
+      };
+    const rate = passed / valid;
+    const total =
+      (valid / PrEnumMethod.PROB_RUNS) *
+      Math.pow(noDupInput.length, this.length);
+    const expect = Math.round(rate * total);
     return {
-      value: 0,
+      value: expect,
       description: "via approximation",
-      detail:
-        "this result was determined probabilistically as the input was too large, it may be inaccurate",
+      detail: `${PrEnumMethod.PROB_WARNING}of approximately ${Math.round(
+        total
+      )} permutations, ${(100 * rate).toPrecision(
+        4
+      )}% are expected to satisfy the conditions`,
       isApproximation: true,
     };
   }
 }
 
-export class PrPermutationsRp extends EnumMethod {
+export class PrPermutationsRp extends PrEnumMethod {
   enumerate(): _EnumResult {
+    const noDupInput = Util.removeDuplicates(this.input);
+    let passed = 0;
+    for (let i = 0; i < PrEnumMethod.PROB_RUNS; i++) {
+      const g = Util.randPermRp(noDupInput, this.length);
+      if (this.evaluate(g)) passed++;
+    }
+    const rate = passed / PrEnumMethod.PROB_RUNS;
+    const total = new DirectPermutationsRp(
+      this.input,
+      [],
+      this.length
+    ).enValue();
+    const expect = Math.round(rate * total);
+
     return {
-      value: 0,
+      value: expect,
       description: "via approximation",
-      detail:
-        "this result was determined probabilistically as the input was too large, it may be inaccurate",
+      detail: `${PrEnumMethod.PROB_WARNING}of ${total} permutations, ${(
+        rate * 100
+      ).toPrecision(4)}% are expected to satisfy the conditions`,
       isApproximation: true,
     };
   }
 }
 
-export class PrCombinations extends EnumMethod {
+export class PrCombinations extends PrEnumMethod {
   enumerate(): _EnumResult {
+    const noDupInput = Util.removeDuplicates(this.input);
+    let [passed, valid] = [0, 0];
+    for (let i = 0; i < PrEnumMethod.PROB_RUNS; i++) {
+      const g = Util.randChoiceRp(noDupInput, this.length);
+      if (Util.subMultiset(g, this.input)) {
+        valid++;
+        if (this.evaluate(g)) passed++;
+      }
+    }
+    if (valid < PrEnumMethod.PROB_ACCEPTABLE)
+      return {
+        value: NaN,
+        description: "the input was too large",
+        detail:
+          "attempted to approximate but the input was too large to run in time, sorry :< - you can get an upper bound for the value by allowing repetitions as the generator for that option is much more efficient",
+        isApproximation: false,
+      };
+    const rate = passed / valid;
+    const total =
+      (valid / PrEnumMethod.PROB_RUNS) *
+      Util.nCr(noDupInput.length + this.length - 1, this.length);
+    const expect = Math.round(rate * total);
     return {
-      value: 0,
+      value: expect,
       description: "via approximation",
-      detail:
-        "this result was determined probabilistically as the input was too large, it may be inaccurate",
+      detail: `${PrEnumMethod.PROB_WARNING}of approximately ${Math.round(
+        total
+      )} combinations, ${(100 * rate).toPrecision(
+        4
+      )}% are expected to satisfy the conditions`,
       isApproximation: true,
     };
   }
 }
 
-export class PrCombinationsRp extends EnumMethod {
+export class PrCombinationsRp extends PrEnumMethod {
   enumerate(): _EnumResult {
+    const noDupInput = Util.removeDuplicates(this.input);
+    let passed = 0;
+    for (let i = 0; i < PrEnumMethod.PROB_RUNS; i++) {
+      const g = Util.randChoiceRp(noDupInput, this.length);
+      if (this.evaluate(g)) passed++;
+    }
+    const rate = passed / PrEnumMethod.PROB_RUNS;
+    const total = new DirectCombinationsRp(
+      this.input,
+      [],
+      this.length
+    ).enValue();
+    const expect = Math.round(rate * total);
+
     return {
-      value: 0,
-      description: "via approximation",
-      detail:
-        "this result was determined probabilistically as the input was too large, it may be inaccurate",
+      value: expect,
+      description: "via approximation using probability",
+      detail: `${PrEnumMethod.PROB_WARNING}of ${total} combinations, ${(
+        rate * 100
+      ).toPrecision(4)}% are expected to satisfy the conditions`,
       isApproximation: true,
     };
   }

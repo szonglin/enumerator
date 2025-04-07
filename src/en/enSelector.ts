@@ -52,7 +52,7 @@ export class EnSelector {
     );
   }
 
-  static readonly MAX_COMPLEXITY = 1 << 30;
+  static readonly MAX_COMPLEXITY = 1 << 28;
 
   private isDistinct = (): boolean => {
     return new Set(this.input).size === this.input.length;
@@ -62,18 +62,25 @@ export class EnSelector {
     if (this.repeats && this.enumerationType === "permutation")
       return new DirectPermutationsRp(this.input, [], this.length).enValue();
     if (this.repeats && this.enumerationType === "combination")
-      return new DirectCombinationsRp(this.input, [], this.length).enValue();
+      // using permutations because the recursion is O(n!)
+      return new DirectPermutationsRp(this.input, [], this.length).enValue();
     if (!this.repeats && this.enumerationType === "permutation")
       return Math.min(
         new DirectPermutations(this.input, [], this.length).enValue(),
         Util.nPr(this.input.length, this.length)
       );
     if (!this.repeats && this.enumerationType === "combination")
-      return Util.nCr(this.input.length, this.length);
+      // same as above
+      return Util.nPr(this.input.length, this.length);
     throw new Error("Unexpected error");
   };
 
   private estimate = (): number => {
+    console.log(
+      "estimator says:",
+      this.upperBound() *
+        this.conditions.reduce((a, b) => a + b.estimateScale(), 1)
+    );
     return (
       this.upperBound() *
       this.conditions.reduce((a, b) => a + b.estimateScale(), 1)
@@ -138,6 +145,7 @@ export class EnSelector {
 
   public select = (): EnumMethod => {
     this.testlog();
+    this.estimate();
     // trivial permutations
     if (this.length === 0 || this.length > this.input.length)
       return new Trivial(this.input, this.conditions, this.length);

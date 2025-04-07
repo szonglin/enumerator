@@ -9,7 +9,8 @@ import {
 } from "@mantine/core";
 import { IconHelpHexagon, IconX } from "@tabler/icons-react";
 import { useState } from "react";
-import { comparisonOption, conditionList } from "../en/condition";
+import { comparisonOption } from "../en/condition";
+import { conditionData } from "../en/conditionData";
 import { ComparisonSwitcher } from "./ComparisonSwitcher";
 
 export interface ConditionDisplayProps {
@@ -52,6 +53,7 @@ export const ConditionDisplay = ({
         );
       case "palindrome":
       case "distinct":
+      case "derangement":
         return (
           <Text fs="italic" c="gray">
             (no options)
@@ -60,6 +62,10 @@ export const ConditionDisplay = ({
       case "sum":
       case "maximum":
       case "minimum":
+      case "maxFrequency":
+      case "maxFreqElt":
+      case "average":
+      case "median":
         return (
           <NumArgOptions
             conditionValues={conditionValues}
@@ -107,7 +113,7 @@ export const ConditionDisplay = ({
         <Text fw={"bold"}>{conditionValues.condition}</Text>
         <Tooltip
           label={
-            conditionList.find((e) => e.condition === conditionValues.condition)
+            conditionData.find((e) => e.condition === conditionValues.condition)
               ?.description || "Error"
           }
         >

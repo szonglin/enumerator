@@ -136,8 +136,48 @@ export class Util {
     return res;
   }
 
+  static subMultiset(arr: number[], of: number[]): boolean {
+    const ms = new Map<number, number>();
+    for (const e of of) {
+      const v = ms.get(e);
+      ms.set(e, v ? v + 1 : 1);
+    }
+    for (const e of arr) {
+      const v = ms.get(e);
+      if (!v) return false;
+      ms.set(e, v - 1);
+    }
+    return true;
+  }
+
+  static isPrefix(arr: number[], of: number[]) {
+    if (arr.length > of.length) return false;
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i] !== of[i]) return false;
+    }
+    return true;
+  }
+
+  static isSuffix(arr: number[], of: number[]) {
+    if (arr.length > of.length) return false;
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i] !== of[of.length - arr.length - 1 + i]) return false;
+    }
+    return true;
+  }
+
   // random choice with repeats, arr must not have repeats
   static randChoiceRp(arr: number[], length: number): number[] {
-    return this.randPermRp(arr, length).sort((a, b) => a - b);
+    // this doesn't work because its not uniform after sorting
+    // return this.randPermRp(arr, length).sort((a, b) => a - b);
+    // instead we use s&b with |s| = length and |b| = arr.length - 1
+    let g = this.mask(arr.length + length - 1, length);
+    g = this.randPermFull(g);
+    const res: number[] = [];
+    let on = 0;
+    for (const e of g) {
+      e ? res.push(arr[on]) : on++;
+    }
+    return res;
   }
 }

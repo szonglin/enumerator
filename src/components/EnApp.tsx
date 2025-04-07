@@ -16,7 +16,7 @@ import {
 } from "@mantine/core";
 import { EnumResult } from "../en/enResult";
 import { ResultList } from "./ResultList";
-import { conditionList } from "../en/condition";
+import { conditionData } from "../en/conditionData";
 
 export const EnApp = () => {
   const enumerationTypeOptions = [
@@ -150,7 +150,7 @@ export const EnApp = () => {
               <Select
                 placeholder="Choose a condition"
                 searchable={true}
-                data={conditionList.map((e) => e.condition)}
+                data={conditionData.map((e) => e.condition)}
                 onChange={(e) => {
                   if (e) handleAdd(e);
                   setShowPopover(false);
@@ -178,9 +178,10 @@ export const EnApp = () => {
       <Text fs={"italic"}>
         The conjunction of all conditions is taken. If you want a disjunction,
         you will need to convert it into a sum of conjunctions. Please note that
-        some inputs may not run in a reasonable amount of time, especially those
-        with a large number of elements and complex conditions. Inputs with
-        letters are converted to their ascii codes.
+        some inputs which would take too long to run otherwise, particularly
+        those with many elements or complex conditions, may be approximated and
+        could be inaccurate. Inputs with letters are converted to their ascii
+        codes.
       </Text>
       <ResultList results={results} />
       <Group>
