@@ -11,7 +11,7 @@ A website to perform simple enumeration tasks.
   - subarrays, subsequences, containment, exclusion, subarray count
   - monotonicity, palindromes, distinctness, derangements
   - sum, average, maximum, minimum
-- Approximations for larger complex queries using sampling/probability
+- Approximations for larger complex queries using Monte Carlo sampling
 
 ### Things it might be able to do in the future:
 
