@@ -23,7 +23,7 @@ A website to perform simple enumeration tasks.
 
 ### Usage:
 
-You can try the site by running
+You run the site locally by doing the following:
 
 ```bash
 git clone git@github.com:szonglin/enumerator.git
