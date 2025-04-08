@@ -24,7 +24,7 @@ export class Util {
   static validateString = (input: string) => {
     if (/[^a-zA-Z0-9\s,]/.test(input))
       throw new Error(
-        "Invalid input: please use only spaces, commas, numbers, or alphabetical characters."
+        "Invalid input: please use only spaces, commas, numbers, or alphabetical characters.",
       );
   };
 
@@ -81,7 +81,7 @@ export class Util {
 
   // generates a mask with n-r zeroes followed by r ones
   static mask(n: number, r: number): number[] {
-    let res = Array(n).fill(0);
+    const res = Array(n).fill(0);
     for (let i = 0; i < r; i++) res[n - 1 - i] = 1;
     return res;
   }
@@ -110,13 +110,15 @@ export class Util {
 
   // random permutation
   static randPerm(arr: number[], length: number): number[] {
+    if (length > arr.length)
+      throw new Error("Cannot permute array to longer length");
     return this.randPermFull(arr).splice(0, length);
   }
 
   // fisher-yates shuffle: https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
   static randPermFull(arr: number[]): number[] {
     const permed = [...arr];
-    for (let i = permed.length; i > 0; i--) {
+    for (let i = permed.length - 1; i > 0; i--) {
       const j = this.randInt(i + 1);
       [permed[j], permed[i]] = [permed[i], permed[j]];
     }
@@ -131,7 +133,7 @@ export class Util {
   // random choice - output is not guaranteed to be sorted
   static randChoice(arr: number[], length: number): number[] {
     // honestly not sure if its the same distribution to just do fisheryates and then sort but this *feels* better
-    let bitmask = this.randPermFull(this.mask(arr.length, length));
+    const bitmask = this.randPermFull(this.mask(arr.length, length));
     const res = [];
     // faster than reduce
     for (let i = 0; i < arr.length; i++) {
@@ -180,7 +182,8 @@ export class Util {
     const res: number[] = [];
     let on = 0;
     for (const e of g) {
-      e ? res.push(arr[on]) : on++;
+      if (e) res.push(arr[on]);
+      else on++;
     }
     return res;
   }

@@ -18,6 +18,7 @@ import {
   PrCombinationsRp,
   DerangementPermutations,
   SumCombinations,
+  SpecialPrPermutations,
 } from "./enMethod";
 import { enumerationType, Util } from "./util";
 
@@ -32,7 +33,7 @@ export class EnSelector {
     enumerationType: enumerationType,
     length: number,
     conditions: Condition[],
-    repeats: boolean
+    repeats: boolean,
   ) {
     this.input = input;
     this.length = length;
@@ -54,19 +55,19 @@ export class EnSelector {
       return new DirectPermutationsRp(
         Util.removeDuplicates(this.input),
         [],
-        this.length
+        this.length,
       ).enValue();
     if (this.repeats && this.enumerationType === "combination")
       // using permutations because the recursion is O(n!)
       return new DirectPermutationsRp(
         Util.removeDuplicates(this.input),
         [],
-        this.length
+        this.length,
       ).enValue();
     if (!this.repeats && this.enumerationType === "permutation")
       return Math.min(
         new DirectPermutations(this.input, [], this.length).enValue(),
-        Util.nPr(this.input.length, this.length)
+        Util.nPr(this.input.length, this.length),
       );
     if (!this.repeats && this.enumerationType === "combination")
       // this condition is relatively lax compared to the others
@@ -95,8 +96,12 @@ export class EnSelector {
     for (const method of directOptions) if (method.accepts()) return method;
 
     /* check fall back to probabilistic */
+    const probOptions = [
+      new SpecialPrPermutations(this.input, this.conditions, this.length),
+      new PrPermutations(this.input, this.conditions, this.length),
+    ];
     if (this.estimate() > EnSelector.MAX_COMPLEXITY)
-      return new PrPermutations(this.input, this.conditions, this.length);
+      for (const method of probOptions) if (method.accepts()) return method;
 
     /* brute force methods */
     const bfOptions = [

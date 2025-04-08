@@ -18,7 +18,7 @@ export const conditionData = [
   {
     condition: "contains",
     description:
-      "contains the elements of the argument in any order - supports repeat values, eg. 'trace' contains 'art'",
+      "contains the elements of the argument in any order, in the sense that the set of elements is a super(multi)set of the argument, eg. 'trace' contains 'art'",
   },
   {
     condition: "excludes",
