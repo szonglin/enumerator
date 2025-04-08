@@ -47,7 +47,7 @@ export class EnSelector {
     this.conditions = to;
   }
 
-  static readonly MAX_COMPLEXITY = 1 << 28;
+  static readonly MAX_COMPLEXITY = 1 << 29;
 
   private upperBound = (): number => {
     if (this.repeats && this.enumerationType === "permutation")
