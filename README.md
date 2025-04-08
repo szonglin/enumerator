@@ -1,6 +1,6 @@
 # Enumerator
 
-A website to perform simple enumeration tasks.
+A [website](https://szonglin.github.io/enumerator/) to perform simple enumeration tasks.
 
 ![](./other/images/exampleuse.png)
 
