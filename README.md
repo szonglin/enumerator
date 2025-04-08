@@ -7,12 +7,11 @@ A website to perform simple enumeration tasks.
 ### Features:
 
 - Enumeration of permutations and combinations with or without repetition using a combination of brute force iterators and direct/dynamic approaches
-- A long list of applicable conditions, including:
-  - subarrays, subsequences, containment, subarray count
+- Several applicable conditions, including:
+  - subarrays, subsequences, containment, exclusion, subarray count
   - monotonicity, palindromes, distinctness, derangements
   - sum, average, maximum, minimum
-  - and more...
-- Probabilistic approximations for larger complex queries
+- Approximations for larger complex queries using sampling/probability
 
 ### Planned features (maybe...):
 
