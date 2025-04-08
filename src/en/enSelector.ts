@@ -95,13 +95,13 @@ export class EnSelector {
     ];
     for (const method of directOptions) if (method.accepts()) return method;
 
-    /* check fall back to probabilistic */
-    const probOptions = [
+    /* check fall back to mc sampling */
+    const samplingOptions = [
       new SpecialPrPermutations(this.input, this.conditions, this.length),
       new PrPermutations(this.input, this.conditions, this.length),
     ];
     if (this.estimate() > EnSelector.MAX_COMPLEXITY)
-      for (const method of probOptions) if (method.accepts()) return method;
+      for (const method of samplingOptions) if (method.accepts()) return method;
 
     /* brute force methods */
     const bfOptions = [
@@ -141,7 +141,7 @@ export class EnSelector {
     ];
     for (const method of directOptions) if (method.accepts()) return method;
 
-    /* check fall back to probabilistic */
+    /* check fall back to mc sampling */
     if (this.estimate() > EnSelector.MAX_COMPLEXITY)
       return new PrCombinations(this.input, this.conditions, this.length);
 
@@ -161,7 +161,7 @@ export class EnSelector {
     ];
     for (const method of directOptions) if (method.accepts()) return method;
 
-    /* check fall back to probabilistic */
+    /* check fall back to mc sampling */
     if (this.estimate() > EnSelector.MAX_COMPLEXITY)
       return new PrCombinationsRp(this.input, this.conditions, this.length);
 

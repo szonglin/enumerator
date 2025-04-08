@@ -444,16 +444,18 @@ abstract class PrEnumMethod extends EnumMethod {
   static readonly PROB_RUNS: number = 1 << 21;
   static readonly PROB_ACCEPTABLE: number = 8;
   static readonly PROB_WARNING: string =
-    "this result was determined probabilistically as the input was too large, so it may be inaccurate: ";
+    "this result was determined using monte carlo sampling as the input" +
+    " was too large, so it may be inaccurate: ";
   public accepts(): boolean {
     return true;
   }
 }
 
 /* Probabilistic Enumerators */
-// approximates the number of permutations using sampling
-// the two no-repeat methods are very wasteful, but it seems there isnt a good
-// way around it. they dont work well for inputs which are very long so theres only a
+// estimates the expected value of the query using monte carlo sampling
+// the two general no-repeat methods are very wasteful in that a lot of
+// samples dont get counted,but it seems there isnt a good way around it.
+// they dont work well for inputs which are very long so theres only a
 // small range of values where they are useful
 // the repeat methods are quite accurate and work well
 export class PrPermutations extends PrEnumMethod {
