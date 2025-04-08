@@ -83,7 +83,6 @@ export const ConditionDisplay = ({
           />
         );
       default:
-        console.log("Unexpected condition type:", cond);
         return <div>Error</div>;
     }
   };

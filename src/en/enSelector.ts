@@ -46,19 +46,6 @@ export class EnSelector {
   public setConditions(to: Condition[]) {
     this.conditions = to;
   }
-  private testlog(): void {
-    console.log("select");
-    console.log(
-      "input length",
-      this.input.length,
-      "length",
-      this.length,
-      "etype",
-      this.enumerationType,
-      "conditions",
-      this.conditions.length
-    );
-  }
 
   static readonly MAX_COMPLEXITY = 1 << 28;
 
@@ -88,11 +75,6 @@ export class EnSelector {
   };
 
   private estimate = (): number => {
-    console.log(
-      "estimator says:",
-      this.upperBound() *
-        this.conditions.reduce((a, b) => a + b.estimateScale(), 1)
-    );
     return (
       this.upperBound() *
       this.conditions.reduce((a, b) => a + b.estimateScale(), 1)
@@ -188,8 +170,6 @@ export class EnSelector {
   };
 
   public select = (): EnumMethod => {
-    this.testlog();
-    this.estimate();
     // trivial permutations
     if (
       this.length === 0 ||

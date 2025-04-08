@@ -70,7 +70,6 @@ export class ParseCondition {
     this.en = en;
   }
   public createCondition = (condition: Record<string, string>): Condition => {
-    console.log("parsing", condition);
     let arg: number[];
     let arg2: number;
     let nArg: number;

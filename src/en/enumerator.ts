@@ -43,19 +43,13 @@ export class Enumerator {
   };
 
   public run = (): EnumResult => {
-    const validation = this.validate();
-    if (validation.some((e) => !!e))
-      throw new Error(
-        "Condition error: " + validation.reduce((a, b) => a + b, "")
-      );
+    const err = this.validate().reduce((a, b) => a + b, "");
+    if (err) throw new Error(`Condition error: ${err}`);
 
     this.determineEnumerationMethod();
     if (!this.en) throw new Error("An unexpected error occurred");
 
     const _res = this.en.enumerate();
-    console.log("completed");
-    console.log("\tinput: ", this.input);
-    console.log("\tresult:", _res);
     return { id: this.resultId++, request: this.summariseRequest(), ..._res };
   };
 
@@ -64,7 +58,6 @@ export class Enumerator {
   };
 
   private validate = (): string[] => {
-    console.log("validate");
     const res: string[] = [];
     this.conditions.forEach((cond) => {
       try {
@@ -78,17 +71,14 @@ export class Enumerator {
   };
 
   public setConditions = (conditions: Record<string, string>[]) => {
-    console.log("read conditions", conditions);
     this.conditionSummary = conditions.map((e) => e.condition).join(", ");
     const conds = [];
     const cf = new ParseCondition(this);
     for (const c of conditions) conds.push(cf.createCondition(c));
-    console.log("parsed conditions", conds);
     this.conditions = conds;
   };
 
   private determineEnumerationMethod = () => {
-    console.log("determine");
     const ens = new EnSelector(
       this.input,
       this.enumerationType,
