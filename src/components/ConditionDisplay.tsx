@@ -12,16 +12,17 @@ import { useState } from "react";
 import { comparisonOption } from "../en/condition";
 import { conditionData } from "../en/conditionData";
 import { ComparisonSwitcher } from "./ComparisonSwitcher";
+import { NegationSwitcher } from "./NegationSwitcher";
 
 export interface ConditionDisplayProps {
-  conditionValues: Record<string, string>;
+  conditionValues: Record<string, any>;
   onDelete: (id: string) => void;
-  onChange: (id: string, newValues: Record<string, string>) => void;
+  onChange: (id: string, newValues: Record<string, any>) => void;
 }
 
 interface OptionsProps {
-  conditionValues: Record<string, string>;
-  onChange: (id: string, newValues: Record<string, string>) => void;
+  conditionValues: Record<string, any>;
+  onChange: (id: string, newValues: Record<string, any>) => void;
 }
 
 export const ConditionDisplay = ({
@@ -92,7 +93,7 @@ export const ConditionDisplay = ({
   return (
     <Card
       withBorder
-      style={{ maxWidth: "180px", flexShrink: 0 }}
+      style={{ maxWidth: "200px", flexShrink: 0 }}
       shadow="sm"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
@@ -110,6 +111,11 @@ export const ConditionDisplay = ({
         </ActionIcon>
       )}
       <Group gap="0.2em">
+        <NegationSwitcher
+          onChange={(e) => {
+            conditionValues.negate = e;
+          }}
+        />
         <Text fw={"bold"}>{conditionValues.condition}</Text>
         <Tooltip
           label={

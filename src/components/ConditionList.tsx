@@ -2,8 +2,8 @@ import { Box } from "@mantine/core";
 import { ConditionDisplay } from "./ConditionDisplay";
 
 export interface ConditionListProps {
-  selectedConditions: Record<string, string>[];
-  onChange: (conditions: Record<string, string>[]) => void;
+  selectedConditions: Record<string, any>[];
+  onChange: (conditions: Record<string, any>[]) => void;
 }
 
 export const ConditionList = ({
@@ -15,7 +15,7 @@ export const ConditionList = ({
     onChange(newSelectedConditions);
   };
 
-  const handleChange = (id: string, newValues: Record<string, string>) => {
+  const handleChange = (id: string, newValues: Record<string, any>) => {
     const newSelectedConditions = selectedConditions.map((e) => {
       return e.id === id ? newValues : e;
     });
