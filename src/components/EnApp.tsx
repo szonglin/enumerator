@@ -31,7 +31,7 @@ export const EnApp = () => {
   const _enumerator = useRef(new Enumerator(enumerationType));
   const [inputString, setInputString] = useState("");
   const [inputLength, setInputLength] = useState(0);
-  const [_conditions, setConditions] = useState<Record<string, string>[]>([]);
+  const [_conditions, setConditions] = useState<Record<string, any>[]>([]);
   const [results, setResults] = useState<EnumResult[]>([]);
   const [withRepetitions, setWithRepetitions] = useState(false);
 
@@ -61,7 +61,7 @@ export const EnApp = () => {
     setInputLength(asArray.length);
   };
 
-  const handleConditionChange = (conditions: Record<string, string>[]) => {
+  const handleConditionChange = (conditions: Record<string, any>[]) => {
     setConditions(conditions);
   };
 

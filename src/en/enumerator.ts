@@ -70,8 +70,10 @@ export class Enumerator {
     return res;
   };
 
-  public setConditions = (conditions: Record<string, string>[]) => {
-    this.conditionSummary = conditions.map((e) => e.condition).join(", ");
+  public setConditions = (conditions: Record<string, any>[]) => {
+    this.conditionSummary = conditions
+      .map((e) => (e.negate ? "!" : "") + e.condition)
+      .join(", ");
     const conds = [];
     const cf = new ParseCondition(this);
     for (const c of conditions) conds.push(cf.createCondition(c));
