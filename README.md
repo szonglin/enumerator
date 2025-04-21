@@ -7,7 +7,7 @@ A [website](https://szonglin.github.io/enumerator/) to perform simple enumeratio
 ### Things it can do:
 
 - Enumeration of permutations and combinations with or without repetition using a combination of brute force iterators and direct/dynamic approaches
-- Several applicable conditions, including:
+- Several applicable conditions (and their negations), including:
   - subarrays, subsequences, containment, exclusion, subarray count
   - monotonicity, palindromes, distinctness, derangements
   - sum, average, maximum, minimum
