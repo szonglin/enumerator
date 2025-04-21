@@ -98,7 +98,7 @@ export class Util {
   static validateString = (input: string) => {
     if (/[^a-zA-Z0-9\s,]/.test(input))
       throw new Error(
-        "Invalid input: please use only spaces, commas, numbers, or alphabetical characters.",
+        "Invalid input: please use only spaces, commas, numbers, or alphabetical characters."
       );
   };
 
@@ -149,6 +149,7 @@ export class Util {
   // random permutation
   // performs a full random permutation on the array and splices out the
   // prefix of the correct length
+  // (!!) the resulting distribution is NOT uniform
   static randPerm(arr: number[], length: number): number[] {
     if (length > arr.length)
       throw new Error("Cannot permute array to longer length");

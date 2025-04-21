@@ -22,3 +22,5 @@
   ![](./images/ex9.png)
 - How many ways can a group of `6` people be chosen from `11` people if there are three people that want to either all be in the group or all not be in the group?
   ![](./images/ex10.png)
+- How many ways can a group of three boys and six girls be ordered such that no two boys are seated next to each other? _(we have to get a bit creative with how we input this one...)_
+  ![](./images/ex11.png)
