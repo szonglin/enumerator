@@ -12,6 +12,7 @@ A [website](https://szonglin.github.io/enumerator/) to perform simple enumeratio
   - monotonicity, palindromes, distinctness, derangements
   - sum, average, maximum, minimum
 - Approximations for larger complex queries using Monte Carlo sampling
+- Some examples [here](./other/examples.md)
 
 ### Things it might be able to do in the future:
 
