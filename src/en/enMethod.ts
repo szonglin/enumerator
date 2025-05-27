@@ -196,7 +196,7 @@ export class DirUnqCombinations extends EnumMethod {
   public enumerate(): _EnumResult {
     return {
       value: Util.nCr(this.input.length, this.length),
-      description: `via direct calculation: ${this.length} values chosen from ${this.input.length} unique elements`,
+      description: `via direct calculation: choice of ${this.length} from ${this.input.length}`,
       detail: `there are ${this.input.length} distinct values, so we choose ${this.length} of them`,
       isApproximation: false,
     };
