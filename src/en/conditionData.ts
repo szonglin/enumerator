@@ -52,6 +52,11 @@ export const conditionData = [
     description: "has all elements distinct, eg. 'copyright'",
   },
   {
+    condition: "countDistinct",
+    description:
+      "number of distinct elements compared with the argument, eg '1, 2, 2, 3' = '3'",
+  },
+  {
     condition: "derangement",
     description:
       "no value is in the same place as it was originally, eg. 'idea' is a derangement of 'aide'",

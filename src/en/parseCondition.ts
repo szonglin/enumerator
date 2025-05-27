@@ -22,6 +22,7 @@ import {
   MaxFrequency,
   MaxFreqElt,
   Excludes,
+  CountDistinct,
 } from "./condition";
 import { Enumerator } from "./enumerator";
 import { Util } from "./util";
@@ -34,7 +35,7 @@ const getInputArg = (arg?: string): number[] => {
 const getComparisonArg = (
   numberOnly: boolean,
   arg?: string,
-  comparison?: string
+  comparison?: string,
 ): [number, comparisonOption] => {
   if (!arg || !comparison) throw new Error("Missing condition argument");
   if (numberOnly && Number.isNaN(Number(arg)))
@@ -51,7 +52,7 @@ const getComparisonArg = (
 const getINCArg = (
   arg?: string,
   arg2?: string,
-  comparison?: string
+  comparison?: string,
 ): [number[], number, comparisonOption] => {
   if (!arg || !arg2 || !comparison)
     throw new Error("Missing condition argument");
@@ -112,25 +113,32 @@ export class ParseCondition {
       case "derangement":
         return new Derangement(this.en, negate);
       // number input type
+      case "countDistinct":
+        [nArg, comparison] = getComparisonArg(
+          true,
+          condition.arg,
+          condition.comparison,
+        );
+        return new CountDistinct(this.en, negate, nArg, comparison);
       case "sum":
         [nArg, comparison] = getComparisonArg(
           true,
           condition.arg,
-          condition.comparison
+          condition.comparison,
         );
         return new Sum(this.en, negate, nArg, comparison);
       case "average":
         [nArg, comparison] = getComparisonArg(
           true,
           condition.arg,
-          condition.comparison
+          condition.comparison,
         );
         return new Average(this.en, negate, nArg, comparison);
       case "median":
         [nArg, comparison] = getComparisonArg(
           true,
           condition.arg,
-          condition.comparison
+          condition.comparison,
         );
         return new Median(this.en, negate, nArg, comparison);
       // number or character input type
@@ -138,28 +146,28 @@ export class ParseCondition {
         [nArg, comparison] = getComparisonArg(
           true,
           condition.arg,
-          condition.comparison
+          condition.comparison,
         );
         return new Maximum(this.en, negate, nArg, comparison);
       case "minimum":
         [nArg, comparison] = getComparisonArg(
           true,
           condition.arg,
-          condition.comparison
+          condition.comparison,
         );
         return new Minimum(this.en, negate, nArg, comparison);
       case "maxFrequency":
         [nArg, comparison] = getComparisonArg(
           true,
           condition.arg,
-          condition.comparison
+          condition.comparison,
         );
         return new MaxFrequency(this.en, negate, nArg, comparison);
       case "maxFreqElt":
         [nArg, comparison] = getComparisonArg(
           true,
           condition.arg,
-          condition.comparison
+          condition.comparison,
         );
         return new MaxFreqElt(this.en, negate, nArg, comparison);
       // input, number, comparison type
@@ -167,21 +175,21 @@ export class ParseCondition {
         [arg, arg2, comparison] = getINCArg(
           condition.arg,
           condition.arg2,
-          condition.comparison
+          condition.comparison,
         );
         return new Count(this.en, negate, arg, arg2, comparison);
       case "subseqCount":
         [arg, arg2, comparison] = getINCArg(
           condition.arg,
           condition.arg2,
-          condition.comparison
+          condition.comparison,
         );
         return new SubseqCount(this.en, negate, arg, arg2, comparison);
       case "countOverlap":
         [arg, arg2, comparison] = getINCArg(
           condition.arg,
           condition.arg2,
-          condition.comparison
+          condition.comparison,
         );
         return new CountOverlap(this.en, negate, arg, arg2, comparison);
       default:

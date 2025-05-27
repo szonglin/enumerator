@@ -61,6 +61,7 @@ export const ConditionDisplay = ({
             (no options)
           </Text>
         );
+      case "countDistinct":
       case "sum":
       case "maximum":
       case "minimum":
