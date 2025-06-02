@@ -23,6 +23,8 @@ import {
   MaxFreqElt,
   Excludes,
   CountDistinct,
+  MinFrequency,
+  MinFreqElt,
 } from "./condition";
 import { Enumerator } from "./enumerator";
 import { Util } from "./util";
@@ -156,6 +158,20 @@ export class ParseCondition {
           condition.comparison,
         );
         return new Minimum(this.en, negate, nArg, comparison);
+      case "minFrequency":
+        [nArg, comparison] = getComparisonArg(
+          true,
+          condition.arg,
+          condition.comparison,
+        );
+        return new MinFrequency(this.en, negate, nArg, comparison);
+      case "minFreqElt":
+        [nArg, comparison] = getComparisonArg(
+          true,
+          condition.arg,
+          condition.comparison,
+        );
+        return new MinFreqElt(this.en, negate, nArg, comparison);
       case "maxFrequency":
         [nArg, comparison] = getComparisonArg(
           true,

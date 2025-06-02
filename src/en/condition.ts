@@ -473,6 +473,62 @@ export class Derangement extends Condition {
   }
 }
 
+export class MinFrequency extends Condition {
+  arg: number;
+  property: comparisonOption;
+  constructor(
+    enumerator: Enumerator,
+    negate: boolean,
+    arg: number,
+    property: comparisonOption,
+  ) {
+    super(enumerator, negate);
+    this.arg = arg;
+    this.property = property;
+  }
+  validate(): void {}
+  _evaluate(test: number[]): boolean {
+    const ms = new Map<number, number>();
+    for (const e of test) {
+      const v = ms.get(e);
+      ms.set(e, v ? v + 1 : 1);
+    }
+    const lf = Math.min(...ms.values());
+    return evaluateComparison(this.property, lf, this.arg);
+  }
+}
+
+// unused
+export class MinFreqElt extends Condition {
+  arg: number;
+  property: comparisonOption;
+  constructor(
+    enumerator: Enumerator,
+    negate: boolean,
+    arg: number,
+    property: comparisonOption,
+  ) {
+    super(enumerator, negate);
+    this.arg = arg;
+    this.property = property;
+  }
+  validate(): void {}
+  _evaluate(test: number[]): boolean {
+    const ms = new Map<number, number>();
+    for (const e of test) {
+      const v = ms.get(e);
+      ms.set(e, v ? v + 1 : 1);
+    }
+    const lf = Math.min(...ms.values());
+    const minFreqElts = Array.from(ms.entries())
+      .filter((e) => e[1] === lf)
+      .map((e) => e[0]);
+    return minFreqElts.some((e) =>
+      evaluateComparison(this.property, e, this.arg),
+    );
+  }
+}
+
 export class MaxFrequency extends Condition {
   arg: number;
   property: comparisonOption;
@@ -489,17 +545,16 @@ export class MaxFrequency extends Condition {
   validate(): void {}
   _evaluate(test: number[]): boolean {
     const ms = new Map<number, number>();
-    let hf = 0;
     for (const e of test) {
       const v = ms.get(e);
       ms.set(e, v ? v + 1 : 1);
-      const w = ms.get(e);
-      if (w && w > hf) hf = w;
     }
+    const hf = Math.max(...ms.values());
     return evaluateComparison(this.property, hf, this.arg);
   }
 }
 
+// unused
 export class MaxFreqElt extends Condition {
   arg: number;
   property: comparisonOption;
@@ -516,13 +571,11 @@ export class MaxFreqElt extends Condition {
   validate(): void {}
   _evaluate(test: number[]): boolean {
     const ms = new Map<number, number>();
-    let hf = 0;
     for (const e of test) {
       const v = ms.get(e);
       ms.set(e, v ? v + 1 : 1);
-      const w = ms.get(e);
-      if (w && w > hf) hf = w;
     }
+    const hf = Math.max(...ms.values());
     const maxFreqElts = Array.from(ms.entries())
       .filter((e) => e[1] === hf)
       .map((e) => e[0]);

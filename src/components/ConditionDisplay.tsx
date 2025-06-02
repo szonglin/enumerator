@@ -65,8 +65,8 @@ export const ConditionDisplay = ({
       case "sum":
       case "maximum":
       case "minimum":
+      case "minFrequency":
       case "maxFrequency":
-      case "maxFreqElt":
       case "average":
       case "median":
         return (

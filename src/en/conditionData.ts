@@ -77,14 +77,14 @@ export const conditionData = [
       "smallest element compared with the argument, eg. '1, 2, 3' > '0' or 'glass' = 'a'",
   },
   {
+    condition: "minFrequency",
+    description:
+      "lowest frequency of any element compared with the argument, eg. 'breeze' = '1'",
+  },
+  {
     condition: "maxFrequency",
     description:
       "highest frequency of any element compared with the argument, eg. 'breeze' = '3'",
-  },
-  {
-    condition: "maxFreqElt",
-    description:
-      "any element with the highest frequency compared with the argument, eg. 'revert' = 'r' or 'e'",
   },
   {
     condition: "average",
