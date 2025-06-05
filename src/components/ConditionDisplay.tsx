@@ -31,61 +31,45 @@ export const ConditionDisplay = ({
   onDelete,
 }: ConditionDisplayProps) => {
   const getOptions = (cond: string) => {
-    // :<
-    switch (cond) {
-      case "increasing":
-      case "decreasing":
+    const argType = conditionData.find((e) => e.condition === cond)?.argType;
+    if (!argType) throw new Error("Unrecognised condition");
+    switch (argType) {
+      case "strictness":
         return (
           <IncDecOptions
             conditionValues={conditionValues}
             onChange={onChange}
           />
         );
-      case "subarray":
-      case "subsequence":
-      case "startsWith":
-      case "endsWith":
-      case "contains":
-      case "excludes":
+      case "subInput":
         return (
           <SubArgOptions
             conditionValues={conditionValues}
             onChange={onChange}
           />
         );
-      case "palindrome":
-      case "distinct":
-      case "derangement":
-        return (
-          <Text fs="italic" c="gray">
-            (no options)
-          </Text>
-        );
-      case "countDistinct":
-      case "sum":
-      case "maximum":
-      case "minimum":
-      case "minFrequency":
-      case "maxFrequency":
-      case "average":
-      case "median":
-        return (
-          <NumArgOptions
-            conditionValues={conditionValues}
-            onChange={onChange}
-          />
-        );
-      case "count":
-      case "countOverlap":
-      case "subseqCount":
+      case "subInputComparison":
         return (
           <SubArgWithNumOptions
             conditionValues={conditionValues}
             onChange={onChange}
           />
         );
+      case "numerical":
+        return (
+          <NumArgOptions
+            conditionValues={conditionValues}
+            onChange={onChange}
+          />
+        );
+      case "none":
+        return (
+          <Text fs="italic" c="gray">
+            (no options)
+          </Text>
+        );
       default:
-        return <div>Error</div>;
+        throw new Error("Unrecognised argType");
     }
   };
 
