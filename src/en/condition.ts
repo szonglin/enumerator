@@ -22,7 +22,7 @@ export type comparisonOption = "less" | "more" | "equal";
 const evaluateComparison = (
   comparison: comparisonOption,
   res: number,
-  arg: number,
+  arg: number
 ): boolean => {
   if (comparison === "equal") return res === arg;
   else if (comparison === "more") return res > arg;
@@ -103,7 +103,7 @@ export class Count extends Condition {
     negate: boolean,
     arg: number[],
     amount: number,
-    property: comparisonOption,
+    property: comparisonOption
   ) {
     super(enumerator, negate);
     this.arg = arg;
@@ -158,7 +158,7 @@ export class CountOverlap extends Condition {
     negate: boolean,
     arg: number[],
     amount: number,
-    property: comparisonOption,
+    property: comparisonOption
   ) {
     super(enumerator, negate);
     this.arg = arg;
@@ -198,7 +198,7 @@ export class SubseqCount extends Condition {
     negate: boolean,
     arg: number[],
     amount: number,
-    property: comparisonOption,
+    property: comparisonOption
   ) {
     super(enumerator, negate);
     this.arg = arg;
@@ -214,7 +214,7 @@ export class SubseqCount extends Condition {
   _evaluate(test: number[]): boolean {
     if (test.length < this.arg.length) return false;
     const count = Array.from({ length: this.arg.length + 1 }, () =>
-      Array(test.length + 1).fill(0),
+      Array(test.length + 1).fill(0)
     );
     for (let j = 0; j < test.length + 1; j++) count[0][j] = 1;
     for (let i = 1; i <= this.arg.length; i++)
@@ -227,7 +227,7 @@ export class SubseqCount extends Condition {
     return evaluateComparison(
       this.property,
       count[this.arg.length][test.length],
-      this.amount,
+      this.amount
     );
   }
   public estimateScale(): number {
@@ -330,7 +330,7 @@ export class Sum extends Condition {
     enumerator: Enumerator,
     negate: boolean,
     arg: number,
-    property: comparisonOption,
+    property: comparisonOption
   ) {
     super(enumerator, negate);
     this.arg = arg;
@@ -351,6 +351,38 @@ export class Sum extends Condition {
     let sum = 0;
     for (let i = 0; i < test.length; i++) sum += test[i];
     return evaluateComparison(this.property, sum, this.arg);
+  }
+}
+
+export class Value extends Condition {
+  arg: number;
+  property: comparisonOption;
+  constructor(
+    enumerator: Enumerator,
+    negate: boolean,
+    arg: number,
+    property: comparisonOption
+  ) {
+    super(enumerator, negate);
+    this.arg = arg;
+    this.property = property;
+  }
+  public getArg(): number {
+    return this.arg;
+  }
+  public getProperty(): comparisonOption {
+    return this.property;
+  }
+  validate(): void {
+    if (this.enumerator.enumerationType !== "permutation")
+      throw new Error("Value is order dependent (permutations only)");
+    if (isNaN(this.arg)) throw new Error("Invalid argument");
+    if (!this.enumerator.input.every((e) => !isNaN(Number(e))))
+      throw new Error("Value arguments must be numbers");
+  }
+  _evaluate(test: number[]): boolean {
+    const value = Number(test.map((e) => e.toString()).join(""));
+    return evaluateComparison(this.property, value, this.arg);
   }
 }
 
@@ -382,7 +414,7 @@ export class CountDistinct extends Condition {
     enumerator: Enumerator,
     negate: boolean,
     arg: number,
-    property: comparisonOption,
+    property: comparisonOption
   ) {
     super(enumerator, negate);
     this.arg = arg;
@@ -407,7 +439,7 @@ export class Maximum extends Condition {
     enumerator: Enumerator,
     negate: boolean,
     arg: number,
-    property: comparisonOption,
+    property: comparisonOption
   ) {
     super(enumerator, negate);
     this.arg = arg;
@@ -437,7 +469,7 @@ export class Minimum extends Condition {
     enumerator: Enumerator,
     negate: boolean,
     arg: number,
-    property: comparisonOption,
+    property: comparisonOption
   ) {
     super(enumerator, negate);
     this.arg = arg;
@@ -480,7 +512,7 @@ export class MinFrequency extends Condition {
     enumerator: Enumerator,
     negate: boolean,
     arg: number,
-    property: comparisonOption,
+    property: comparisonOption
   ) {
     super(enumerator, negate);
     this.arg = arg;
@@ -506,7 +538,7 @@ export class MinFreqElt extends Condition {
     enumerator: Enumerator,
     negate: boolean,
     arg: number,
-    property: comparisonOption,
+    property: comparisonOption
   ) {
     super(enumerator, negate);
     this.arg = arg;
@@ -524,7 +556,7 @@ export class MinFreqElt extends Condition {
       .filter((e) => e[1] === lf)
       .map((e) => e[0]);
     return minFreqElts.some((e) =>
-      evaluateComparison(this.property, e, this.arg),
+      evaluateComparison(this.property, e, this.arg)
     );
   }
 }
@@ -536,7 +568,7 @@ export class MaxFrequency extends Condition {
     enumerator: Enumerator,
     negate: boolean,
     arg: number,
-    property: comparisonOption,
+    property: comparisonOption
   ) {
     super(enumerator, negate);
     this.arg = arg;
@@ -562,7 +594,7 @@ export class MaxFreqElt extends Condition {
     enumerator: Enumerator,
     negate: boolean,
     arg: number,
-    property: comparisonOption,
+    property: comparisonOption
   ) {
     super(enumerator, negate);
     this.arg = arg;
@@ -580,7 +612,7 @@ export class MaxFreqElt extends Condition {
       .filter((e) => e[1] === hf)
       .map((e) => e[0]);
     return maxFreqElts.some((e) =>
-      evaluateComparison(this.property, e, this.arg),
+      evaluateComparison(this.property, e, this.arg)
     );
   }
 }
@@ -592,7 +624,7 @@ export class Average extends Condition {
     enumerator: Enumerator,
     negate: boolean,
     arg: number,
-    property: comparisonOption,
+    property: comparisonOption
   ) {
     super(enumerator, negate);
     this.arg = arg;
@@ -615,7 +647,7 @@ export class Median extends Condition {
     enumerator: Enumerator,
     negate: boolean,
     arg: number,
-    property: comparisonOption,
+    property: comparisonOption
   ) {
     super(enumerator, negate);
     this.arg = arg;

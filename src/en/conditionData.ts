@@ -130,4 +130,10 @@ export const conditionData = [
       " subsequences of 'ana'",
     argType: "subInputComparison",
   },
+  {
+    condition: "value",
+    description:
+      "value of the permutation as a number compared with the argument, eg. '2314' > '2313'",
+    argType: "numerical",
+  },
 ];
